@@ -13,7 +13,7 @@ class graph():
         self.mapping=None    ## index to node_id
         self.read_graph(path)
     def read_graph(self,path):
-        df = pd.read_csv('/content/temp_adj_mx.csv',index_col=0)
+        df = pd.read_csv(path,index_col=0)
         cols=df.columns
         df.columns=[i for i in range(len(cols))]
         df=df.reset_index(drop=True)

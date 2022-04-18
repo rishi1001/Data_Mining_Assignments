@@ -1,39 +1,45 @@
+print("hehehe")
 import torch
-from torch.nn import Linear
-import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
 import os
-from .model import GCN
-from .dataset import data_point, graph
+# from dataset import data_point, graph
+from model import GCN
 import pandas as pd
+import numpy as np
 
-
-G=graph("../a3_datasets/temp_adj_mx.csv")
+G=graph("../a3_datasets/d2_adj_mx.csv")
+print(G.edge_list)
+print(G.edge_weight)
 
 
 def read_data():
-    dataset=[]
-    path='../a3_datasets/temp_x.csv'
+  dataset=[]
+  path='../a3_datasets/d2_X.csv'
 
-    df = pd.read_csv('/content/temp_x.csv')
-    df=df.drop(['Unnamed: 0'], axis=1)
-    for i in range(len(df)-1):
-      # print("dddddddd")
-      # print(i)
-      d=df.loc[i:i+1,:]
-      d=d.reset_index(drop=True)
-      dataset.append(data_point(d,G.mapping))
+  df = pd.read_csv(path)
+  df=df.drop(['Unnamed: 0'], axis=1)
+  for i in range(len(df)-1):
+    # print("dddddddd")
+    # print(i)
+    d=df.loc[i:i+1,:]
+    d=d.reset_index(drop=True)
+    dataset.append(data_point(d,G.mapping))
 
-    return dataset
+  return dataset
 
 
 # TODO masking for train and test while training & loss function
 # TODO add code for validation
+def convert(l,mapping):
+  m = {mapping[i]:i for i in range(len(mapping))}
+  return [m[str(i)] for i in l]  
+
 
 dataset = read_data()
-dataset_size=len(dataset)
-train_set = dataset[0:int(0.9*dataset_size)]
-test_set= dataset[int(0.9*dataset_size):]
+splits = np.load("../a3_datasets/d2_graph_splits.npz") 
+train_node_ids = convert(splits["train_node_ids"],G.mapping) 
+val_node_ids = convert(splits["val_node_ids"],G.mapping) 
+test_node_ids = convert(splits["test_node_ids"],G.mapping)
+
 # TODO generate train,val,test set
 
 
@@ -49,13 +55,13 @@ def train(epoch):
 
     running_loss = 0.0
     # batch wise training
-    for data in enumerate(train_set):
+    for data in dataset:
         optimizer.zero_grad()  # Clear gradients.
         print(data.features)
     #   print(data.features.shape)
-        out = model(data.features, data.edge_index, data.edge_weight).reshape(-1)   
+        out = model(data.features, G.edge_index, G.edge_weight).reshape(-1)   
     #   print(out.shape)
-        loss = criterion(out, data.y[data.train_mask])
+        loss = criterion(out, data.y[train_node_ids])
     #   make_dot(out).render("graph.dot", format="png")
     #   print(out)
         print("dataaa y")
@@ -75,11 +81,11 @@ def test(test_set,test=False):         # test=True for test set
     running_loss = 0.0
     with torch.no_grad():
         for data in test_set:
-            out = model(data.features, data.edge_index, data.edge_weight).reshape(-1)
+            out = model(data.features, G.edge_index, G.edge_weight).reshape(-1)
             if test:
-                loss = criterion(out, data.y[data.test_mask])
+                loss = criterion(out, data.y[data.test_node_ids])
             else:
-                loss = criterion(out, data.y[data.val_mask])
+                loss = criterion(out, data.y[data.val_node_ids])
             loss = criterion(out, data.y)
             running_loss += loss.item()
             print(loss)
@@ -103,11 +109,9 @@ if __name__ == '__main__':
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         print('epoch ', epoch + 1)
         train(epoch)
-        test(val_set)      # on validation set      
+        test(val_node_ids)      # on validation set      
 
     print('performing test')
-    test(test_set, test=True)       # on test set
-
     print('Finished Training')
 
     # Saving our trained model
