@@ -7,7 +7,7 @@
 #include <map>
 using namespace std;
 
-int x=1;
+int x=1;           // this is hard coded, take command line input
 
 vector<vector<int>> candidate_gen(vector<vector<int>> &f){
     // for(auto i: f){
@@ -88,13 +88,9 @@ vector<vector<int>> apriori(){
         }
     }
     for(int i=0;i<f.size();i++) ans.push_back(f[i]);
-    int iter=0;
     while(!f.empty()){
         vector<vector<int>> c=candidate_gen(f);
         f.clear();
-        
-        if(iter==2) break;
-        iter++;
         int tot_c = c.size();
         map<int,int> count;
         inFile.open("my_test.dat");
@@ -136,7 +132,6 @@ vector<vector<int>> apriori(){
         inFile.close();
         // break;
     }
-
     return ans;
 
 
@@ -177,13 +172,24 @@ int main()
     // cout << x; 
 
     vector<vector<int>> ans=apriori();
-    set<vector<int>> sorted_ans;
+    vector<string> sorted_ans;
     for(auto i: ans){
-        sorted_ans.insert(i);
+        string s="";
+        vector<string> vs;
+        for(auto j:i){
+            vs.push_back(to_string(j));
+        }
+        sort(vs.begin(),vs.end());
+        int vsn=vs.size();
+        for(int j=0;j<vsn;j++){
+            s+=vs[j];
+            if(j!=vsn-1) s+=" ";
+        }
+        sorted_ans.push_back(s);
     }
-    for(auto i:sorted_ans){
-        for(auto j:i) cout<<j<<" ";
-        cout<<"\n";
+    sort(sorted_ans.begin(),sorted_ans.end());
+    for(auto i: sorted_ans){
+        cout<<i<<"\n";
     }
     
     return 0;
