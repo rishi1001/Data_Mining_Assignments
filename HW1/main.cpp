@@ -7,7 +7,7 @@
 #include <map>
 using namespace std;
 
-int x=1;           // this is hard coded, take command line input
+int x=98;           // this is hard coded, take command line input
 
 vector<vector<int>> candidate_gen(vector<vector<int>> &f){
     // for(auto i: f){
