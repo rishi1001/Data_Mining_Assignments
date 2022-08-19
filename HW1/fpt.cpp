@@ -13,6 +13,7 @@ int tot_transactions;          // tot transactions (update it)
 struct Node{
     int val;
     Node *parent;
+    int count;          // this count stores the total count which end at this particular node
 };
 
 bool isFrequent(int v){
@@ -25,23 +26,24 @@ bool isFrequent(int v){
 int MAXN = 5;
 
 vector<vector<int>> ans;
-void fun(int curr, vector<Node*> &a, vector<int> &freq){            // call with curr=MAXN and all leaf nodes in a
+void fun(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq){            // call with curr=MAXN and all leaf nodes in a
     if(curr<0 || a.empty()) return;
     // ans.push_back(freq);
     for(int i=curr;i>=0;i--){
         freq.push_back(i);
         vector<Node*> up;
+        map<Node*,int> up_count;                                  
         int n=a.size();
         for(int j=0;j<n;j++){
             if(a[j]->val==i){
-                up.push_back(a[j]->parent);
-                a[j]=a[j]->parent;          // update this
+                up_count[a[j]->parent]+=count[a[j]]+a[j]->count;            
+                a[j]=a[j]->parent;          
             }
         }
         if(isFrequent(up.size())){
             ans.push_back(freq);
+            fun(i-1,up,up_count,freq);
         }
-        fun(i-1,up,freq);
         freq.pop_back();
     }
 }
