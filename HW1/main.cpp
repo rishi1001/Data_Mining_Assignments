@@ -5,9 +5,33 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <algorithm>
+
 using namespace std;
 
 int x=98;           // this is hard coded, take command line input
+
+//Function to check if small(sorted) is present in big(sorted)
+bool check(vector<int>&small, vector<int>&big){ 
+    int i=0,j=0;
+    int s=small.size(), b=big.size();
+
+    while(i<s && j<b){
+        if(small[i]==big[j]){
+            i++;
+            j++;
+        }
+        else if(small[i]<big[j]){
+            return false;
+        }
+        else {
+            j++;
+        }
+    }
+    
+    if (i==s) return true;
+    return false;
+} 
 
 vector<vector<int>> candidate_gen(vector<vector<int>> &f){
     // for(auto i: f){
@@ -28,6 +52,9 @@ vector<vector<int>> candidate_gen(vector<vector<int>> &f){
             }
             if(intersect){
                 vector<int> v;
+
+                // TODO : DOUBT here compare last element to be pushed m
+
                 for(int k=0;k<n1;k++){
                     v.push_back(f[i][k]);
                 }
@@ -41,7 +68,7 @@ vector<vector<int>> candidate_gen(vector<vector<int>> &f){
                         sub.push_back(v[z1]);
                     }
                     bool found=false;
-                    for(int i1=0;i1<n;i1++){            // optimise this
+                    for(int i1=0;i1<n;i1++){            // TODO: optimise this
                         if(sub==f[i1]){
                             found=true;
                             break;
@@ -63,11 +90,11 @@ vector<vector<int>> candidate_gen(vector<vector<int>> &f){
 
 }
 
-vector<vector<int>> apriori(){
+vector<vector<int>> apriori(string datasetName){
     vector<vector<int>> ans;
     map<int,int> c1;
     ifstream inFile;
-    inFile.open("my_test.dat");
+    inFile.open(datasetName);
     int n=0;
     while(!inFile.eof()){
         string s;
@@ -92,8 +119,9 @@ vector<vector<int>> apriori(){
         vector<vector<int>> c=candidate_gen(f);
         f.clear();
         int tot_c = c.size();
-        map<int,int> count;
-        inFile.open("my_test.dat");
+        map<int,int> count;         // Frequency of each candidate
+        inFile.open(datasetName);
+        // Getting frequency of each candidate
         while(!inFile.eof()){
             string s;
             getline(inFile,s);
@@ -101,22 +129,38 @@ vector<vector<int>> apriori(){
             // cout<<"here1\n";
             stringstream ss(s);
             int num;
-            set<int> transaction;
+
+            // TODO: Optimizied here
+
+            // set<int> transaction;
+            // while(ss>>num){
+            //     transaction.insert(num);
+            // }
+            // // for(auto i: transaction) cout<<i<<" ";
+            // // cout<<"transaction done\n";
+            // //Checking which candidates are present in  the transaction
+            // for(int i=0;i<tot_c;i++){
+            //     bool present=true;
+            //     for(int j: c[i]){
+            //         if(transaction.find(j)==transaction.end()){
+            //             present=false;
+            //             break;
+            //         }
+            //     }
+            //     if(present) count[i]++;
+            // }
+
+            // Optimized code
+            vector<int> transaction;
             while(ss>>num){
-                transaction.insert(num);
+                transaction.push_back(num);
             }
-            // for(auto i: transaction) cout<<i<<" ";
-            // cout<<"transaction done\n";
+            sort(transaction.begin(),transaction.end());
+            
             for(int i=0;i<tot_c;i++){
-                bool present=true;
-                for(int j: c[i]){
-                    if(transaction.find(j)==transaction.end()){
-                        present=false;
-                        break;
-                    }
-                }
-                if(present) count[i]++;
+                if(check(c[i],transaction)) count[i]++;
             }
+
         }
         for(pair<int,int> val: count){
             // cout<<val.first<<", "<<val.second<<"\n";
@@ -137,7 +181,35 @@ vector<vector<int>> apriori(){
 
 }
 
-int main()
+void writeOutput (string outputFileName, vector<vector<int>>& ans){
+    ofstream fout;
+    fout.open(outputFileName);
+    vector<string> sorted_ans;
+    for(auto i: ans){
+        string s="";
+        vector<string> vs;
+        for(auto j:i){
+            vs.push_back(to_string(j));
+        }
+        sort(vs.begin(),vs.end());
+        int vsn=vs.size();
+        for(int j=0;j<vsn;j++){
+            s+=vs[j];
+            if(j!=vsn-1) s+=" ";
+        }
+        s+='\n';
+        //fout<<s;
+        sorted_ans.push_back(s);
+    }
+    sort(sorted_ans.begin(),sorted_ans.end());
+    for(auto i: sorted_ans){
+        fout<<i;
+    }
+    fout.close();
+} 
+
+
+int main(int argc, char **argv)
 {
     // associates standard input with input.txt 
     // ifstream inFile;
@@ -170,9 +242,12 @@ int main()
     // // getline(cin, x);
     // // prints string x in output.txt file
     // cout << x; 
-
-    vector<vector<int>> ans=apriori();
+    string datasetName = argv[1];
+    x= stoi(argv[2]);
+    string outputFileName = argv[3];
+    vector<vector<int>> ans=apriori(datasetName);
     vector<string> sorted_ans;
+    writeOutput(outputFileName,ans);
     for(auto i: ans){
         string s="";
         vector<string> vs;
@@ -189,7 +264,8 @@ int main()
     }
     sort(sorted_ans.begin(),sorted_ans.end());
     for(auto i: sorted_ans){
-        cout<<i<<"\n";
+        continue;
+        //cout<<i<<"\n";
     }
     
     return 0;
