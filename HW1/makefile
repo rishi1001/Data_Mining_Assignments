@@ -27,4 +27,4 @@ fptree:
 	g++ --std=c++17 -O3 fpt.cpp -o fpt 
 
 fptree_test: fptree
-	time ./fpt ./testcases/dummy2/test.dat 30 ./testcases/dummy2/myout.dat
+	time ./fpt ./testcases/5/test5.dat 98 ./testcases/5/myout.dat

@@ -45,35 +45,72 @@ bool isFrequent(int v){
 // Maximum Number of elements 
 int MAXN = INT_MIN;
 void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq, vector<vector<int>> &ans){            // call with curr=MAXN and all leaf nodes in a
-    if(curr<0 || a.empty()) return;
+    if(curr<=0 || a.empty()) return;
+    // cout<<freq.size()<<"\n";
+    // if(freq.size()>0) {
+    //     cout<<freq[0]<<"\n";
+    //     exit(0);
+    // }
+    
     // ans.push_back(freq);
     // cout<<"A at "<<(curr)<<"\n";
     // for(Node* x:a){
     //     cout<<"{"<<x->val<<" "<<x->count<<" "<<count[x]<<"} ";
     // }
     // cout<<endl;
-    for(int i=curr;i>=0;i--){
+    for(int i=curr;i>=1;i--){
         freq.push_back(i);
+        // if(freq.size()==2 && freq[0]==3 && freq[1]==1){
+        //     cout<<"a\n";
+        //     for(auto x:a) cout<<"{"<<x->val<<" "<<x->count<<" "<<count[x]<<"} ";
+        // }
         vector<Node*> up;
         map<Node*,int> up_count;                                  
         int n=a.size();
         int tot=0;
         for(int j=0;j<n;j++){
             if(a[j]->val==i){
-                up_count[a[j]->parent]+=count[a[j]]+a[j]->count;            
+                up_count[a[j]->parent]+=count[a[j]]; 
+                if(freq.size()==1) up_count[a[j]->parent]+=a[j]->count;   
+                // if(i==18983) cout<<i<<", "<<a[j]->count<<"\n";
+                // exit(0);
                 a[j]=a[j]->parent;          
             }
         }
+
+        set<Node*> a_new;
+        for(int j=0;j<n;j++){
+            a_new.insert(a[j]);
+        }
+        a.clear();
+        for(auto j:a_new) a.push_back(j);
+        
         
 
         for(auto x:up_count) {
-            if (x.first->val !=-1) up.push_back(x.first);
+            if (x.first->val !=-1) {
+                up.push_back(x.first);
+                count[x.first]+=up_count[x.first];
+            }
             tot+=x.second;
         }
+
+        // if(freq.size()==2 && freq[0]==3 && freq[1]==1){
+        //     cout<<"up\n";
+        //     cout<<"tot: "<<tot<<"\n";
+        //     for(auto x:up) cout<<"{"<<x->val<<" "<<x->count<<" "<<up_count[x]<<"} ";
+        // }
+
+        
 
         if(isFrequent(tot)){
             //cout<<"Where are youu??"<<"\n";
             //cout<<"freq.size("<<freq.size()<<"\n";
+            // if(freq.size()==1 && freq[0]==14422){
+            //     cout<<"here\n";
+            //     cout<<tot<<"\n";
+            //     exit(0);
+            // }
             
             ans.push_back(freq);
             // if (curr==MAXN){
@@ -185,6 +222,9 @@ vector<vector<int>> fpt(string datasetName){
     map<Node*,int> count; 
     vector<int> freq;
     //cout<<MAXN<<"\n";
+    for(int i=1;i<=MAXN;i++){
+
+    }
     generateItemsets(MAXN,leaves,count,freq,ans);
     return ans;
 
