@@ -28,4 +28,3 @@ fptree:
 
 fptree_test: fptree
 	time ./fpt ./testcases/dummy2/test.dat 30 ./testcases/dummy2/myout.dat
-

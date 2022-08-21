@@ -4,6 +4,7 @@
 #include <set>
 #include <sstream>
 #include <vector>
+#include <queue>
 #include <map>
 #include <algorithm>
 #include <climits>
@@ -35,8 +36,6 @@ void getLeaves(vector<Node*> &leaves, Node* curr, map<Node*,vector<Node*>>& adj)
 }
 
 bool isFrequent(int v){
-    cout<<"v: "<<v<<"\n";
-    cout<<"tot tran"<<tot_transactions<<"\n";
     if(v*100>=x*tot_transactions){
         return true;
     }
@@ -48,11 +47,11 @@ int MAXN = INT_MIN;
 void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq, vector<vector<int>> &ans){            // call with curr=MAXN and all leaf nodes in a
     if(curr<0 || a.empty()) return;
     // ans.push_back(freq);
-    cout<<"A at "<<(curr)<<"\n";
-    for(Node* x:a){
-        cout<<"{"<<x->val<<" "<<x->count<<"} ";
-    }
-    cout<<endl;
+    // cout<<"A at "<<(curr)<<"\n";
+    // for(Node* x:a){
+    //     cout<<"{"<<x->val<<" "<<x->count<<" "<<count[x]<<"} ";
+    // }
+    // cout<<endl;
     for(int i=curr;i>=0;i--){
         freq.push_back(i);
         vector<Node*> up;
@@ -65,16 +64,29 @@ void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<
                 a[j]=a[j]->parent;          
             }
         }
+        
 
         for(auto x:up_count) {
-            up.push_back(x.first);
+            if (x.first->val !=-1) up.push_back(x.first);
             tot+=x.second;
         }
 
         if(isFrequent(tot)){
-            cout<<"Where are youu??"<<"\n";
-            cout<<"freq.size("<<freq.size()<<"\n";
+            //cout<<"Where are youu??"<<"\n";
+            //cout<<"freq.size("<<freq.size()<<"\n";
+            
             ans.push_back(freq);
+            // if (curr==MAXN){
+            //     cout<<"fffff\n";
+            //     for(int xx:freq) cout<<xx<<" ";
+            //     cout<<endl;
+            //     cout<<"CALLING for "<<i-1<<endl;
+            //     for(Node* x:up){
+            //         cout<<"{"<<x->val<<" "<<x->count<<" "<<up_count[x]<<"} ";
+            //     }
+            //     cout<<endl;
+
+            // }
             generateItemsets(i-1,up,up_count,freq,ans);
         }
         freq.pop_back();
@@ -134,14 +146,35 @@ vector<vector<int>> fpt(string datasetName){
             }
 
             // updating count of the particular node
-            temp_root->count +=1;
+            
 
         }
+        temp_root->count +=1;
         tot_transactions++;
     }
     inFile.close();
 
     // dfs on tree and call fun()
+    // PRINTING TREE
+    // queue<Node*> q;
+    // q.push(root);
+    // int level=0;
+    // while(!q.empty()){
+    //     cout<<"LEVEL "<<level<<endl;
+    //     int ll=q.size();
+    //     for(int i=0;i<ll;i++){
+    //         Node* tt = q.front();
+    //         q.pop();
+    //         cout<<"{"<<tt->val<<" "<<tt->count<<"} ";
+    //         for(auto x:adj[tt]){
+    //             q.push(x);
+    //         }
+    //     }
+    //     level++;
+    //     cout<<endl;
+    // }
+
+
     vector<Node*> leaves;
     getLeaves(leaves,root,adj);
     // for(Node* x:leaves){
@@ -151,7 +184,7 @@ vector<vector<int>> fpt(string datasetName){
     // Generating Itemsets
     map<Node*,int> count; 
     vector<int> freq;
-    cout<<MAXN<<"\n";
+    //cout<<MAXN<<"\n";
     generateItemsets(MAXN,leaves,count,freq,ans);
     return ans;
 
