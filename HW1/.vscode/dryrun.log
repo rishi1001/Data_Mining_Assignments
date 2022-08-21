@@ -1,0 +1,5 @@
+make --dry-run --keep-going --print-directory
+make: Entering directory '/home/krishnanshu/Documents/col761/Data_Mining_Assignments/HW1'
+g++ -O3 main.cpp -o apriori 
+make: Leaving directory '/home/krishnanshu/Documents/col761/Data_Mining_Assignments/HW1'
+ 

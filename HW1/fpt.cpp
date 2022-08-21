@@ -5,6 +5,8 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <climits>
 using namespace std;
 
 int x=98;           // this is hard coded, take command line input
@@ -16,6 +18,22 @@ struct Node{
     int count;          // this count stores the total count which end at this particular node
 };
 
+// Function to get Leaves of the tree
+void getLeaves(vector<Node*> &leaves, Node* curr, map<Node*,vector<Node*>>& adj){
+    if (curr==nullptr){
+        return;
+    }
+
+    if(adj[curr].size()==0){
+        leaves.push_back(curr);
+        return;
+    }
+
+    for(Node* child: adj[curr]){
+        getLeaves(leaves,child,adj);
+    }
+}
+
 bool isFrequent(int v){
     if(v*100>=x*tot_transactions){
         return true;
@@ -23,26 +41,38 @@ bool isFrequent(int v){
     return false;
 }
 
-int MAXN = 5;
-
+// Maximum Number of elements 
+int MAXN = INT_MIN;
 vector<vector<int>> ans;
-void fun(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq){            // call with curr=MAXN and all leaf nodes in a
+void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq){            // call with curr=MAXN and all leaf nodes in a
     if(curr<0 || a.empty()) return;
     // ans.push_back(freq);
+    cout<<"A at "<<(curr)<<"\n";
+    for(Node* x:a){
+        cout<<"{"<<x->val<<" "<<x->count<<"} ";
+    }
+    cout<<endl;
     for(int i=curr;i>=0;i--){
         freq.push_back(i);
         vector<Node*> up;
         map<Node*,int> up_count;                                  
         int n=a.size();
+        int tot=0;
         for(int j=0;j<n;j++){
             if(a[j]->val==i){
                 up_count[a[j]->parent]+=count[a[j]]+a[j]->count;            
                 a[j]=a[j]->parent;          
             }
         }
-        if(isFrequent(up.size())){
+
+        for(auto x:up_count) {
+            up.push_back(x.first);
+            tot+=x.second;
+        }
+
+        if(isFrequent(tot)){
             ans.push_back(freq);
-            fun(i-1,up,up_count,freq);
+            generateItemsets(i-1,up,up_count,freq);
         }
         freq.pop_back();
     }
@@ -50,35 +80,86 @@ void fun(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq){ 
 
 // vector<Node> adj[MAXN];
 
-vector<vector<int>> fpt(){
+vector<vector<int>> fpt(string datasetName){
     vector<vector<int>> ans;
     ifstream inFile;
-    inFile.open("my_test.dat");
+    inFile.open(datasetName);
     tot_transactions=0;
+    
+    // Tree construction
+    Node* root = new Node;
+    root->parent = NULL;
+    root-> count =0;
+    root-> val =-1;
+
+    Node* temp_root = new Node;
+    map<Node*,vector<Node*>> adj; // adj[N] = {vector of children of N}
+    bool found;
+
+
     while(!inFile.eof()){
         string s;
         getline(inFile,s);
         if(s.empty()) break;
         stringstream ss(s);
         int num;
+        temp_root = root;
         while(ss>>num){
-            c1[num]++;          // make treeee
+            MAXN=max(num,MAXN);
+
+            // Checking if node is in current Node's childs
+            found=false;
+            for (Node* child: adj[temp_root]){
+                if (child->val==num){
+                    found = true;
+                    temp_root = child;
+                    break;
+                }
+            }
+
+            if (!found){
+                // Adding node to the tree
+                Node* newNode = new Node;
+                newNode->val = num;
+                newNode->count =0;
+                newNode->parent = temp_root;
+
+                adj[newNode] = {};
+                adj[temp_root].push_back(newNode);
+
+                temp_root = newNode;
+            }
+
+            // updating count of the particular node
+            temp_root->count +=1;
+
         }
         tot_transactions++;
     }
     inFile.close();
 
     // dfs on tree and call fun()
-    
+    vector<Node*> leaves;
+    getLeaves(leaves,root,adj);
+    for(Node* x:leaves){
+        cout<<"{"<<x->val<<" "<<x->count<<"} ";
+    }
+    cout<<endl;
+    // Generating Itemsets
+    map<Node*,int> count; 
+    vector<int> freq;
+    ans.clear();
+    generateItemsets(MAXN,leaves,count,freq);
     return ans;
 
 
 }
 
-int main()
-{
-
-    vector<vector<int>> ans=fpt();
+void writeOutput (string outputFileName, vector<vector<int>>& ans){
+    // Need to convert the first string because of output
+    // 121 comes before 8 in answer
+    ofstream fout;
+    fout.open(outputFileName);
     vector<string> sorted_ans;
     for(auto i: ans){
         string s="";
@@ -92,12 +173,27 @@ int main()
             s+=vs[j];
             if(j!=vsn-1) s+=" ";
         }
+        s+='\n';
+        //fout<<s;
         sorted_ans.push_back(s);
     }
     sort(sorted_ans.begin(),sorted_ans.end());
     for(auto i: sorted_ans){
-        cout<<i<<"\n";
+        fout<<i;
     }
+    fout.close();
+} 
+
+
+int main(int argc, char **argv)
+{
+
+    string datasetName = argv[1];
+    x= stoi(argv[2]);
+    string outputFileName = argv[3];
+
+    vector<vector<int>> ans=fpt(datasetName);
+    writeOutput(outputFileName,ans);
     
     return 0;
 }

@@ -182,6 +182,8 @@ vector<vector<int>> apriori(string datasetName){
 }
 
 void writeOutput (string outputFileName, vector<vector<int>>& ans){
+    // Need to convert the first string because of output
+    // 121 comes before 8 in answer
     ofstream fout;
     fout.open(outputFileName);
     vector<string> sorted_ans;
