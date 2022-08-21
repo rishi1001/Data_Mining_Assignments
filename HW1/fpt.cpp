@@ -10,7 +10,7 @@
 using namespace std;
 
 int x=98;           // this is hard coded, take command line input
-int tot_transactions;          // tot transactions (update it)
+int tot_transactions=0;          // tot transactions (update it)
 
 struct Node{
     int val;
@@ -35,6 +35,8 @@ void getLeaves(vector<Node*> &leaves, Node* curr, map<Node*,vector<Node*>>& adj)
 }
 
 bool isFrequent(int v){
+    cout<<"v: "<<v<<"\n";
+    cout<<"tot tran"<<tot_transactions<<"\n";
     if(v*100>=x*tot_transactions){
         return true;
     }
@@ -43,8 +45,7 @@ bool isFrequent(int v){
 
 // Maximum Number of elements 
 int MAXN = INT_MIN;
-vector<vector<int>> ans;
-void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq){            // call with curr=MAXN and all leaf nodes in a
+void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq, vector<vector<int>> &ans){            // call with curr=MAXN and all leaf nodes in a
     if(curr<0 || a.empty()) return;
     // ans.push_back(freq);
     cout<<"A at "<<(curr)<<"\n";
@@ -71,8 +72,10 @@ void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<
         }
 
         if(isFrequent(tot)){
+            cout<<"Where are youu??"<<"\n";
+            cout<<"freq.size("<<freq.size()<<"\n";
             ans.push_back(freq);
-            generateItemsets(i-1,up,up_count,freq);
+            generateItemsets(i-1,up,up_count,freq,ans);
         }
         freq.pop_back();
     }
@@ -141,15 +144,15 @@ vector<vector<int>> fpt(string datasetName){
     // dfs on tree and call fun()
     vector<Node*> leaves;
     getLeaves(leaves,root,adj);
-    for(Node* x:leaves){
-        cout<<"{"<<x->val<<" "<<x->count<<"} ";
-    }
-    cout<<endl;
+    // for(Node* x:leaves){
+    //     cout<<"{"<<x->val<<" "<<x->count<<"} ";
+    // }
+    // cout<<endl;
     // Generating Itemsets
     map<Node*,int> count; 
     vector<int> freq;
-    ans.clear();
-    generateItemsets(MAXN,leaves,count,freq);
+    cout<<MAXN<<"\n";
+    generateItemsets(MAXN,leaves,count,freq,ans);
     return ans;
 
 
