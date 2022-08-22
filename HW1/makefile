@@ -28,3 +28,4 @@ fptree:
 
 fptree_test: fptree
 	time ./fpt ./testcases/5/test5.dat 98 ./testcases/5/myout.dat
+	diff ./testcases/5/out_98.dat_sorted ./testcases/5/myout.dat

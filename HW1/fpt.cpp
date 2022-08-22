@@ -44,8 +44,9 @@ bool isFrequent(int v){
 
 // Maximum Number of elements 
 int MAXN = INT_MIN;
+vector<int> frequentElements;
 void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<int> &freq, vector<vector<int>> &ans){            // call with curr=MAXN and all leaf nodes in a
-    if(curr<=0 || a.empty()) return;
+    if(curr<0 || a.empty()) return;
     // cout<<freq.size()<<"\n";
     // if(freq.size()>0) {
     //     cout<<freq[0]<<"\n";
@@ -58,8 +59,8 @@ void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<
     //     cout<<"{"<<x->val<<" "<<x->count<<" "<<count[x]<<"} ";
     // }
     // cout<<endl;
-    for(int i=curr;i>=1;i--){
-        freq.push_back(i);
+    for(int i=curr;i>=0;i--){
+        freq.push_back(frequentElements[i]);
         // if(freq.size()==2 && freq[0]==3 && freq[1]==1){
         //     cout<<"a\n";
         //     for(auto x:a) cout<<"{"<<x->val<<" "<<x->count<<" "<<count[x]<<"} ";
@@ -69,7 +70,7 @@ void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<
         int n=a.size();
         int tot=0;
         for(int j=0;j<n;j++){
-            if(a[j]->val==i){
+            if(a[j]->val==frequentElements[i]){
                 up_count[a[j]->parent]+=count[a[j]]; 
                 if(freq.size()==1) up_count[a[j]->parent]+=a[j]->count;   
                 // if(i==18983) cout<<i<<", "<<a[j]->count<<"\n";
@@ -131,12 +132,48 @@ void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<
 }
 
 // vector<Node> adj[MAXN];
+map<int,int> getFrequentElements(string datasetName){
+    ifstream inFile;
+    inFile.open(datasetName);
+    tot_transactions=0;
+
+    set<int> uniqueElements;
+    map<int,int> frequencies;
+    while(!inFile.eof()){
+        string s;
+        getline(inFile,s);
+        if(s.empty()) break;
+        stringstream ss(s);
+        int num;
+        while(ss>>num){
+            uniqueElements.insert(num);
+            frequencies[num]+=1;
+        }
+        tot_transactions++;
+    }
+    inFile.close();
+    vector<pair<int,int>> temp;  // Temporary array to get vector of freqeuent elements in Sorted order  
+    for(int x:uniqueElements){
+        if(!isFrequent(frequencies[x])){
+            frequencies.erase(x);
+        }
+        else{
+            cout<<x<<' '<<frequencies[x]<<endl;
+            temp.push_back({-1*frequencies[x],x});
+        }
+    }
+    sort(temp.begin(),temp.end());
+    for(pair<int,int> x:temp){
+        frequentElements.push_back(x.second);
+    }
+    MAXN = frequentElements.size();
+    return frequencies;
+}
 
 vector<vector<int>> fpt(string datasetName){
     vector<vector<int>> ans;
     ifstream inFile;
     inFile.open(datasetName);
-    tot_transactions=0;
     
     // Tree construction
     Node* root = new Node;
@@ -148,7 +185,8 @@ vector<vector<int>> fpt(string datasetName){
     map<Node*,vector<Node*>> adj; // adj[N] = {vector of children of N}
     bool found;
 
-
+    map<int,int> frequencies =getFrequentElements(datasetName);
+    
     while(!inFile.eof()){
         string s;
         getline(inFile,s);
@@ -156,13 +194,22 @@ vector<vector<int>> fpt(string datasetName){
         stringstream ss(s);
         int num;
         temp_root = root;
+        // reading Transactions
+        vector<pair<int,int>> transaction;
         while(ss>>num){
-            MAXN=max(num,MAXN);
-
+            if (frequencies.find(num)!=frequencies.end()){
+                transaction.push_back({-1*frequencies[num],num});
+            }
+        }
+        sort(transaction.begin(),transaction.end());
+        
+        // Adding Transaction to the FPTREE
+        for(pair<int,int> x:transaction){
+           
             // Checking if node is in current Node's childs
             found=false;
             for (Node* child: adj[temp_root]){
-                if (child->val==num){
+                if (child->val==x.second){
                     found = true;
                     temp_root = child;
                     break;
@@ -172,7 +219,7 @@ vector<vector<int>> fpt(string datasetName){
             if (!found){
                 // Adding node to the tree
                 Node* newNode = new Node;
-                newNode->val = num;
+                newNode->val = x.second;
                 newNode->count =0;
                 newNode->parent = temp_root;
 
@@ -187,12 +234,19 @@ vector<vector<int>> fpt(string datasetName){
 
         }
         temp_root->count +=1;
-        tot_transactions++;
     }
     inFile.close();
 
-    // dfs on tree and call fun()
-    // PRINTING TREE
+    // cout<<MAXN<<' '<<tot_transactions<<endl;
+    // cout<<"FREQUENT ELEMENTS: ";
+    // for(auto x:frequentElements){
+    //     cout<<x<<" ";
+    // }
+    // cout<<endl;
+
+    // cout<<"TREE\n";
+    // //dfs on tree and call fun()
+    // //PRINTING TREE
     // queue<Node*> q;
     // q.push(root);
     // int level=0;
@@ -221,11 +275,7 @@ vector<vector<int>> fpt(string datasetName){
     // Generating Itemsets
     map<Node*,int> count; 
     vector<int> freq;
-    //cout<<MAXN<<"\n";
-    for(int i=1;i<=MAXN;i++){
-
-    }
-    generateItemsets(MAXN,leaves,count,freq,ans);
+    generateItemsets(MAXN-1,leaves,count,freq,ans);
     return ans;
 
 
