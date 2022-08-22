@@ -78,6 +78,8 @@ void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<
             }
         }
 
+
+        // NEED to optimize this
         set<Node*> a_new;
         for(int j=0;j<n;j++){
             a_new.insert(a[j]);
@@ -222,9 +224,6 @@ vector<vector<int>> fpt(string datasetName){
     map<Node*,int> count; 
     vector<int> freq;
     //cout<<MAXN<<"\n";
-    for(int i=1;i<=MAXN;i++){
-
-    }
     generateItemsets(MAXN,leaves,count,freq,ans);
     return ans;
 
