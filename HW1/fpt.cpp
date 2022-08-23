@@ -79,6 +79,8 @@ void generateItemsets(int curr, vector<Node*> &a ,map<Node*,int> &count, vector<
             }
         }
 
+
+        // NEED to optimize this
         set<Node*> a_new;
         for(int j=0;j<n;j++){
             a_new.insert(a[j]);
