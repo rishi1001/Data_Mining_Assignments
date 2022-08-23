@@ -160,7 +160,7 @@ map<int,int> getFrequentElements(string datasetName){
             frequencies.erase(x);
         }
         else{
-            cout<<x<<' '<<frequencies[x]<<endl;
+            //cout<<x<<' '<<frequencies[x]<<endl;
             temp.push_back({-1*frequencies[x],x});
         }
     }

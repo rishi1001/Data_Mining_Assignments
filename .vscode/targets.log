@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Aug 20 00:04:45 2022
+# Make data base, printed on Tue Aug 23 13:19:21 2022
 
 # Variables
 
@@ -25,7 +25,7 @@ SSH_AGENT_LAUNCHER = gnome-keyring
 # environment
 GJS_DEBUG_OUTPUT = stderr
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-2975c006-c9de-485e-91a3-6b3b5c7bf840.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-92f85f1a-77d6-496a-b16b-38e6a072c37c.sock
 # environment
 MANDATORY_PATH = /usr/share/gconf/pop.mandatory.path
 # environment
@@ -71,7 +71,7 @@ CURDIR := /home/krishnanshu/Documents/col761/Data_Mining_Assignments
 # environment
 VSCODE_PIPE_LOGGING = true
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
 LESSOPEN = | /usr/bin/lesspipe %s
 # automatic
@@ -95,13 +95,13 @@ MAKEFILE_LIST :=
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_PID = 206206
+VSCODE_PID = 16560
 # environment
 XDG_SESSION_TYPE = x11
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
 # environment
-SESSION_MANAGER = local/pop-os:@/tmp/.ICE-unix/1796,unix/pop-os:/tmp/.ICE-unix/1796
+SESSION_MANAGER = local/pop-os:@/tmp/.ICE-unix/1805,unix/pop-os:/tmp/.ICE-unix/1805
 # automatic
 *F = $(notdir $*)
 # environment
@@ -137,7 +137,7 @@ MAKEFILES :=
 # automatic
 ^F = $(notdir $^)
 # environment
-INVOCATION_ID = 34908b64fd2c4d87a2c10ce0043195a0
+INVOCATION_ID = e0b3036a53fd41ed9981a3c6eae37c0b
 # environment
 VSCODE_LOG_NATIVE = false
 # environment
@@ -167,7 +167,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := 
 # environment
-SYSTEMD_EXEC_PID = 1815
+SYSTEMD_EXEC_PID = 1824
 # environment
 DISPLAY = :1
 # environment
@@ -179,9 +179,9 @@ DEFAULTS_PATH = /usr/share/gconf/pop.default.path
 # default
 MAKE_VERSION := 4.3
 # environment
-MANAGERPID = 1537
+MANAGERPID = 1583
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 206206
+GIO_LAUNCHED_DESKTOP_FILE_PID = 16560
 # environment
 _ = /usr/share/code/code
 # environment
@@ -189,7 +189,7 @@ XDG_RUNTIME_DIR = /run/user/1000
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-JOURNAL_STREAM = 8:29480
+JOURNAL_STREAM = 8:39116
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -223,9 +223,9 @@ GDMSESSION = pop
 
 # Directories
 
-# . (device 66311, inode 6430335): 7 files, no impossibilities.
+# . (device 66311, inode 6430335): 8 files, no impossibilities.
 
-# 7 files, no impossibilities in 1 directories.
+# 8 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -275,12 +275,13 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 15 / storage = 127 B / avg = 8 B
-# current buf: size = 8162 B / used = 127 B / count = 15 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 16 / storage = 144 B / avg = 9 B
+# current buf: size = 8162 B / used = 144 B / count = 16 / avg = 9 B
 
-# strcache performance: lookups = 18 / hit rate = 16%
+# strcache performance: lookups = 19 / hit rate = 15%
 # hash-table stats:
-# Load=15/8192=0%, Rehash=0, Collisions=0/18=0%
-# Finished Make data base on Sat Aug 20 00:04:45 2022
+# Load=16/8192=0%, Rehash=0, Collisions=0/19=0%
+# Finished Make data base on Tue Aug 23 13:19:21 2022
+ 
 
  
