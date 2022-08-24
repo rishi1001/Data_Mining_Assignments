@@ -39,9 +39,20 @@ void mine(struct fptree* tree, vector<int>& prefix){
     return;
 }
 
+// TODO: Check if tree is empty
+// Returns True if tree is empty
+bool isEmpty(struct fptree* tree){
+    return false;
+}
+
 // Constructs conditional FPtree on currentFptree of value
 struct fptree* generate(struct fptree* currentFptree,int value){
-    return nullptr;
+    struct fptree* conditionalTree = new fptree;
+    
+    // First we will generate frequencies of each element
+    map<int,int> frequencies;
+    
+
 }
 
 void fpGrowth(struct fptree* tree, vector<int>& prefix){
@@ -53,7 +64,25 @@ void fpGrowth(struct fptree* tree, vector<int>& prefix){
        return;
     }
     
-
+    for(pair<int,Node*> x: tree->headerTable){
+        int num_times=0;                // sum of count of x.first in tree 
+        struct Node* temp=x.second;     // temp to iterate in nodes having val x.first
+        while(temp!=nullptr){
+            num_times+=temp->count;
+            temp=temp->next;
+        }
+        if (isFrequent(num_times)){     // if x.first is frequent
+            prefix.push_back(x.first);
+            struct fptree* conditionalTreeOnX = generate(tree,x.first);
+            if (isEmpty(tree)){
+                ans.push_back(prefix);
+            }
+            else {
+                fpGrowth(conditionalTreeOnX,prefix);
+                prefix.pop_back();
+            }
+        }   
+    }
     
 
 }
