@@ -57,6 +57,7 @@ void mine(struct fptree* tree, vector<int>& prefix){
 // TODO: Check if tree is empty
 // Returns True if tree is empty
 bool isEmpty(struct fptree* tree){
+    if(tree->headerTable.empty()) return true;
     return false;
 }
 
@@ -165,7 +166,13 @@ struct fptree* generate(struct fptree* currentFptree,int value){
 void fpGrowth(struct fptree* tree, vector<int>& prefix){
     
     //TODO: Check single path 
-    bool single = false;
+    bool single = true;
+    for(pair<int,Node*> ele: tree->headerTable){
+        if(ele.second->next!=nullptr){
+            single=false;
+            break;
+        }
+    }
     if (single){
        mine(tree,prefix);
        return;
