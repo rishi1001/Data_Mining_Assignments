@@ -42,7 +42,7 @@ void mine(struct fptree* tree, vector<int>& prefix){
     }
     int n=elements.size();
     int tot_n = (1<<n);
-    for(int i=0;i<tot_n;i++){
+    for(int i=1;i<tot_n;i++){               // from 1 because not pushing empty set
         vector<int> curr=prefix;            // TODO check if EFFICENT or not
         for(int j=0;j<n;j++){
             if(i&(1<<j)){
@@ -188,10 +188,8 @@ void fpGrowth(struct fptree* tree, vector<int>& prefix){
         if (isFrequent(num_times)){     // if x.first is frequent
             prefix.push_back(x.first);
             struct fptree* conditionalTreeOnX = generate(tree,x.first);
-            if (isEmpty(tree)){
-                ans.push_back(prefix);
-            }
-            else {
+            ans.push_back(prefix);
+            if (!isEmpty(tree)){
                 fpGrowth(conditionalTreeOnX,prefix);
                 prefix.pop_back();
             }
@@ -230,7 +228,7 @@ map<int,int> getFrequentElements(string datasetName){
     return frequencies;
 }
 
-vector<vector<int>> fpt(string datasetName){
+void fpt(string datasetName){
     vector<vector<int>> ans;
     ifstream inFile;
     inFile.open(datasetName);
@@ -309,6 +307,21 @@ vector<vector<int>> fpt(string datasetName){
     inFile.close();
 
 
+    // for(pair<int,Node*> x: tree->headerTable){
+    //     int num_times=0;                // sum of count of x.first in tree 
+    //     struct Node* temp=x.second;     // temp to iterate in nodes having val x.first
+    //     while(temp!=nullptr){
+    //         cout<<temp->val<<" "<<temp->count<<",";
+    //         temp=temp->next;
+
+    //     } 
+    //     cout<<"\n";
+    // }
+
+
+    
+
+
     // CALLING FPGROWTH
     vector<int> prefix;
     fpGrowth(tree,prefix);
@@ -319,7 +332,7 @@ vector<vector<int>> fpt(string datasetName){
     // }
     // cout<<endl;
 
-    // cout<<"TREE\n";
+    // cout<<"TREE: \n";
     // //dfs on tree and call fun()
     // //PRINTING TREE
     // queue<Node*> q;
@@ -339,6 +352,8 @@ vector<vector<int>> fpt(string datasetName){
     //     level++;
     //     cout<<endl;
     // }
+
+    
 
 
     // vector<Node*> leaves;

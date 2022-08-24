@@ -24,8 +24,8 @@ apriori_test: apriori
 
 
 fptree:
-	g++ --std=c++17 -O3 fpt.cpp -o fpt 
+	g++ --std=c++17 -O3 fpt2.cpp -o fpt2 
 
 fptree_test: fptree
-	time ./fpt ./testcases/5/test5.dat 98 ./testcases/5/myout.dat
+	time ./fpt2 ./testcases/5/test5.dat 98 ./testcases/5/myout.dat
 	diff ./testcases/5/out_98.dat_sorted ./testcases/5/myout.dat
