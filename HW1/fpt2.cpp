@@ -36,6 +36,21 @@ bool isFrequent(int v){
 
 // ALL COMBINATION OF SIGLE PATH TREE PUSH IN ans
 void mine(struct fptree* tree, vector<int>& prefix){
+    vector<int> elements;
+    for(pair<int,Node*> ele: tree->headerTable){     
+        elements.push_back(ele.first);
+    }
+    int n=elements.size();
+    int tot_n = (1<<n);
+    for(int i=0;i<tot_n;i++){
+        vector<int> curr=prefix;            // TODO check if EFFICENT or not
+        for(int j=0;j<n;j++){
+            if(i&(1<<j)){
+                curr.push_back(elements[j]);
+            }
+        }
+        ans.push_back(curr);
+    }
     return;
 }
 
