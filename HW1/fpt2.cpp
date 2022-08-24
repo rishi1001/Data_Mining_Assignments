@@ -15,8 +15,8 @@ int tot_transactions=0;          // tot transactions (update it)
 vector<vector<int>> ans;   // GLOBAL VECTOR FOR ALL TRANSACTIONS
 struct Node{
     int val;
-    Node *parent;
-    Node *next;
+    Node *parent = nullptr;
+    Node *next = nullptr;
     int count;          // this count stores the total count which end at this particular node
 };
 
@@ -61,12 +61,104 @@ bool isEmpty(struct fptree* tree){
 }
 
 // Constructs conditional FPtree on currentFptree of value
+// TODO try const for currentFptree
 struct fptree* generate(struct fptree* currentFptree,int value){
-    struct fptree* conditionalTree = new fptree;
     
     // First we will generate frequencies of each element
     map<int,int> frequencies;
+    Node *current = currentFptree->headerTable[value];
+    Node *temp;
+    while(current!=nullptr){
+        int count = current->count;   // This will added for each ancestor
+        temp=current->parent;         // Now go up to the root
+        while(temp != currentFptree->root){
+            frequencies[temp->val]+=count; 
+            temp=temp->parent;
+        }
+        current= current->next;
+    }
+    // vector<pair<int,int>> temp;  // Temporary array to get vector of freqeuent elements in Sorted order  
+    // for(pair<int,int> x: frequencies){
+    //     if(isFrequent(x.second)){
+    //         temp.push_back({-1*x.second,x.first});
+    //     }
+    // }
+    // sort(temp.begin(),temp.end());
+
+
+    struct fptree* conditionalTree = new fptree;
+    // Root of the newFPtree
+    Node*  root = new Node;
+    root->val = -1;
+    root->parent = nullptr;
+    root->count = 0;
+    root->next= nullptr;
+    conditionalTree->root = root;
     
+    // Adjacency List 
+    map<Node*,vector<Node*>> adj;
+    map<int,Node*> lastOccurence;
+
+    current = currentFptree->headerTable[value];
+    while(current!=nullptr){
+        int count = current->count;   // This will added for each ancestor
+        temp=current->parent;         // Now go up to the root
+        vector<pair<int,int>> transaction;
+        while(temp != currentFptree->root){    
+            if(isFrequent(frequencies[temp->val])){
+                transaction.push_back({-1*frequencies[temp->val],temp->val});
+            }
+            temp=temp->parent;
+        }
+        current= current->next;
+
+        // Now pushing transaction to newFPtree
+        sort(transaction.begin(),transaction.end());
+        Node* temp_root = root;
+        bool found;
+        for(pair<int,int> x:transaction){
+            // Checking if node is in current Node's childs
+            found=false;
+            for (Node* child: adj[temp_root]){
+                if (child->val==x.second){
+                    found = true;
+                    temp_root = child;
+                    temp_root->count += count;
+                    break;
+                }
+            }
+
+            if (!found){
+                // Adding node to the tree
+                Node* newNode = new Node;
+                newNode->val = x.second;
+                newNode->count =count;
+                newNode->parent = temp_root;
+                newNode->next=nullptr;
+
+                // Update Next pointers
+                if (lastOccurence.find(x.second)!=lastOccurence.end()){
+                    // Found
+                    lastOccurence[x.second]->next=newNode;
+                }else{
+                    //First found so update header table
+                    conditionalTree->headerTable[x.second]=newNode;
+                }
+                lastOccurence[x.second]=newNode;
+
+                // Updating adjacency matrix
+                adj[newNode] = {};
+                adj[temp_root].push_back(newNode);
+                temp_root = newNode;
+            }
+
+
+        }
+    }
+    return conditionalTree;
+
+    
+
 
 }
 
@@ -123,21 +215,11 @@ map<int,int> getFrequentElements(string datasetName){
         tot_transactions++;
     }
     inFile.close();
-    vector<pair<int,int>> temp;  // Temporary array to get vector of freqeuent elements in Sorted order  
     for(int x:uniqueElements){
         if(!isFrequent(frequencies[x])){
             frequencies.erase(x);
         }
-        else{
-            //cout<<x<<' '<<frequencies[x]<<endl;
-            temp.push_back({-1*frequencies[x],x});
-        }
     }
-    sort(temp.begin(),temp.end());
-    for(pair<int,int> x:temp){
-        frequentElements.push_back(x.second);
-    }
-    MAXN = frequentElements.size();
     return frequencies;
 }
 
@@ -147,13 +229,17 @@ vector<vector<int>> fpt(string datasetName){
     inFile.open(datasetName);
     
     // Tree construction
+    struct fptree* tree = new fptree;
     Node* root = new Node;
-    root->parent = NULL;
+    root->parent = nullptr;
     root-> count =0;
     root-> val =-1;
+    root->next = nullptr;
+    tree->root=root;
 
     Node* temp_root = new Node;
     map<Node*,vector<Node*>> adj; // adj[N] = {vector of children of N}
+    map<int,Node*> lastOccurence;
     bool found;
 
     map<int,int> frequencies =getFrequentElements(datasetName);
@@ -183,6 +269,7 @@ vector<vector<int>> fpt(string datasetName){
                 if (child->val==x.second){
                     found = true;
                     temp_root = child;
+                    temp_root->count+=1;
                     break;
                 }
             }
@@ -191,23 +278,33 @@ vector<vector<int>> fpt(string datasetName){
                 // Adding node to the tree
                 Node* newNode = new Node;
                 newNode->val = x.second;
-                newNode->count =0;
+                newNode->count =1;
                 newNode->parent = temp_root;
 
                 adj[newNode] = {};
                 adj[temp_root].push_back(newNode);
 
                 temp_root = newNode;
+
+                // Update Next pointers
+                newNode->next=nullptr;
+                if (lastOccurence.find(x.second)!=lastOccurence.end()){
+                    // Found
+                    lastOccurence[x.second]->next=newNode;
+                }else{
+                    //First found so update header table
+                    tree->headerTable[x.second]=newNode;
+                }
+                lastOccurence[x.second]=newNode;
             }
-
-            // updating count of the particular node
-            
-
         }
-        temp_root->count +=1;
     }
     inFile.close();
 
+
+    // CALLING FPGROWTH
+    vector<int> prefix;
+    fpGrowth(tree,prefix);
     // cout<<MAXN<<' '<<tot_transactions<<endl;
     // cout<<"FREQUENT ELEMENTS: ";
     // for(auto x:frequentElements){
@@ -237,23 +334,23 @@ vector<vector<int>> fpt(string datasetName){
     // }
 
 
-    vector<Node*> leaves;
-    getLeaves(leaves,root,adj);
-    // for(Node* x:leaves){
-    //     cout<<"{"<<x->val<<" "<<x->count<<"} ";
-    // }
-    // cout<<endl;
-    // Generating Itemsets
-    map<Node*,int> count; 
-    vector<int> freq;
-    generateItemsets(MAXN-1,leaves,count,freq,ans);
-    return ans;
+    // vector<Node*> leaves;
+    // getLeaves(leaves,root,adj);
+    // // for(Node* x:leaves){
+    // //     cout<<"{"<<x->val<<" "<<x->count<<"} ";
+    // // }
+    // // cout<<endl;
+    // // Generating Itemsets
+    // map<Node*,int> count; 
+    // vector<int> freq;
+    // generateItemsets(MAXN-1,leaves,count,freq,ans);
+    // return ans;
 
 
 }
 
 
-void writeOutput (string outputFileName, vector<vector<int>>& ans){
+void writeOutput (string outputFileName){
     // Need to convert the first string because of output
     // 121 comes before 8 in answer
     ofstream fout;
@@ -290,8 +387,8 @@ int main(int argc, char **argv)
     x= stoi(argv[2]);
     string outputFileName = argv[3];
 
-    vector<vector<int>> ans=fpt(datasetName);
-    writeOutput(outputFileName,ans);
+    fpt(datasetName);
+    writeOutput(outputFileName);
     
     return 0;
 }
