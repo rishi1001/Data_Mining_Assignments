@@ -5,5 +5,5 @@ if [ "$1" = "-apriori" ]; then
 elif [ "$1" = "-fptree" ]; then
 	./fpt $2 $3 $4
 elif [ "$1" = "-plot" ]; then
-	./plot $2 $3
+	python plot.py $2 $3
 fi
