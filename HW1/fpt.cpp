@@ -8,11 +8,13 @@
 #include <map>
 #include <algorithm>
 #include <climits>
+#include <csignal>
 using namespace std;
 
 int x=98;           // this is hard coded, take command line input
 int tot_transactions=0;          // tot transactions (update it)
 vector<vector<int>> ans;   // GLOBAL VECTOR FOR ALL TRANSACTIONS
+string outputFileName;
 struct Node{
     int val;
     Node *parent = nullptr;
@@ -26,7 +28,6 @@ struct fptree
     map<int,Node*> headerTable;
     bool single=true;
 };
-
 
 bool isFrequent(int v){
     if(v*100>=x*tot_transactions){
@@ -339,13 +340,26 @@ void writeOutput (string outputFileName){
     fout.close();
 } 
 
+void signalHandler( int signum ) {
+    cout << "Interrupt signal (" << signum << ") received.\n";
+    cout << "Please wait, saving file.\n";
+    writeOutput(outputFileName);    
+    exit(signum);  
+}
+
+void registerSignals(){
+    signal(SIGINT, signalHandler);              // ctrl + c
+    // signal(SIGTERM, signalHandler);
+    // signal(SIGQUIT, signalHandler);
+}
 
 int main(int argc, char **argv)
 {
+    registerSignals();
 
     string datasetName = argv[1];
     x= stoi(argv[2]);
-    string outputFileName = argv[3];
+    outputFileName = argv[3];
 
     fpt(datasetName);
     writeOutput(outputFileName);

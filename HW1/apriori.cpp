@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <csignal>
 #include <iostream>
 #include <fstream>
 #include <set>
@@ -10,6 +11,8 @@
 using namespace std;
 
 int x=98;           // this is hard coded, take command line input
+vector<vector<int>> ans; // global, can save on interrupt
+string outputFileName;
 
 bool binary_search(vector<int> &x, vector<vector<int>> &f){
     int n = f.size() - 1;
@@ -104,8 +107,7 @@ vector<vector<int>> candidate_gen(vector<vector<int>> &f){
 
 }
 
-vector<vector<int>> apriori(string datasetName){
-    vector<vector<int>> ans;
+void apriori(string datasetName){
     map<int,int> c1;
     ifstream inFile;
     inFile.open(datasetName);
@@ -192,9 +194,6 @@ vector<vector<int>> apriori(string datasetName){
         inFile.close();
         // break;
     }
-    return ans;
-
-
 }
 
 void writeOutput (string outputFileName, vector<vector<int>>& ans){
@@ -224,6 +223,19 @@ void writeOutput (string outputFileName, vector<vector<int>>& ans){
     fout.close();
 } 
 
+
+void signalHandler( int signum ) {
+    cout << "Interrupt signal (" << signum << ") received.\n";
+    cout << "Please wait, saving file.\n";
+    writeOutput(outputFileName,ans);    
+    exit(signum);  
+}
+
+void registerSignals(){
+    signal(SIGINT, signalHandler);              // ctrl + c
+    // signal(SIGTERM, signalHandler);
+    // signal(SIGQUIT, signalHandler);
+}
 
 int main(int argc, char **argv)
 {
@@ -258,11 +270,12 @@ int main(int argc, char **argv)
     // // getline(cin, x);
     // // prints string x in output.txt file
     // cout << x; 
+    registerSignals();
+
     string datasetName = argv[1];
     x= stoi(argv[2]);
-    string outputFileName = argv[3];
-    vector<vector<int>> ans=apriori(datasetName);
-    vector<string> sorted_ans;
+    outputFileName = argv[3];
+    apriori(datasetName);
     writeOutput(outputFileName,ans);
     
     return 0;
