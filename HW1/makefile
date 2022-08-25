@@ -2,7 +2,7 @@
 .PHONY:apriori fptree
 
 apriori:
-	@g++ -O3 apriori.cpp -o apriori 
+	g++ --std=c++17 -O3 apriori.cpp -o apriori 
 
 apriori_test: apriori
 	@echo "Running on test2" 
