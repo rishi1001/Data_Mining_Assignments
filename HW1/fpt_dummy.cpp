@@ -24,6 +24,7 @@ struct fptree
 {
     Node *root = nullptr;
     map<int,Node*> headerTable;
+    bool single=true;
 };
 
 
@@ -95,6 +96,7 @@ struct fptree* generate(struct fptree* currentFptree,int value){
     root->count = 0;
     root->next= nullptr;
     conditionalTree->root = root;
+    conditionalTree->single=true;
     
     // Adjacency List 
     map<Node*,vector<Node*>> adj;
@@ -150,6 +152,7 @@ struct fptree* generate(struct fptree* currentFptree,int value){
                 // Updating adjacency matrix
                 adj[newNode] = {};
                 adj[temp_root].push_back(newNode);
+                if(adj[temp_root].size()>1) conditionalTree->single=false;
                 temp_root = newNode;
             }
 
@@ -166,14 +169,7 @@ struct fptree* generate(struct fptree* currentFptree,int value){
 void fpGrowth(struct fptree* tree, vector<int>& prefix){
     
     //TODO: Check single path 
-    bool single = true;
-    for(pair<int,Node*> ele: tree->headerTable){
-        if(ele.second->next!=nullptr){
-            single=false;
-            break;
-        }
-    }
-    if (single){
+    if (tree->single){
        mine(tree,prefix);
        return;
     }
@@ -189,10 +185,11 @@ void fpGrowth(struct fptree* tree, vector<int>& prefix){
             prefix.push_back(x.first);
             struct fptree* conditionalTreeOnX = generate(tree,x.first);
             ans.push_back(prefix);
-            if (!isEmpty(tree)){
+
+            if (!isEmpty(conditionalTreeOnX)){
                 fpGrowth(conditionalTreeOnX,prefix);
-                prefix.pop_back();
             }
+            prefix.pop_back();
         }   
     }
     
@@ -241,6 +238,7 @@ void fpt(string datasetName){
     root-> val =-1;
     root->next = nullptr;
     tree->root=root;
+    tree->single=true;
 
     Node* temp_root = new Node;
     map<Node*,vector<Node*>> adj; // adj[N] = {vector of children of N}
@@ -288,6 +286,7 @@ void fpt(string datasetName){
 
                 adj[newNode] = {};
                 adj[temp_root].push_back(newNode);
+                if(adj[temp_root].size()>1) tree->single=false;
 
                 temp_root = newNode;
 
@@ -352,6 +351,8 @@ void fpt(string datasetName){
     //     level++;
     //     cout<<endl;
     // }
+
+    
 
     
 

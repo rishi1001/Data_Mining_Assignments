@@ -22,10 +22,36 @@ apriori_test: apriori
 	@echo "Checking on test5"
 	@diff ./testcases/5/out_98.dat_sorted ./testcases/5/myout.dat
 
-
 fptree:
-	g++ --std=c++17 -O3 fpt2.cpp -o fpt2 
+	g++ --std=c++17 -O3 fpt.cpp -o fpt
+
+fpt_test2: fptree
+	@echo "Running on dummy" 
+	@time ./fpt ./testcases/dummy/test.dat 30 ./testcases/dummy/myout.dat
+	@echo "Checking on dummy"
+	@diff ./testcases/dummy/out_30.dat ./testcases/dummy/myout.dat
+	@echo "Running on dummy2" 
+	@time ./fpt ./testcases/dummy2/test.dat 30 ./testcases/dummy2/myout.dat
+	@echo "Checking on dummy2"
+	@diff ./testcases/dummy2/out_30.dat ./testcases/dummy2/myout.dat
+	@echo "Running on test2" 
+	@time ./fpt ./testcases/2/test2.dat 30 ./testcases/2/myout.dat
+	@echo "Checking on test2"
+	@diff ./testcases/2/out_30.dat_sorted ./testcases/2/myout.dat
+	@echo "Running on test3" 
+	@time ./fpt ./testcases/3/test3.dat 1 ./testcases/3/myout.dat
+	@echo "Checking on test3"
+	@diff ./testcases/3/out_1.dat_sorted ./testcases/3/myout.dat
+	@echo "Running on test4" 
+	@time ./fpt ./testcases/4/test4.dat 90 ./testcases/4/myout.dat
+	@echo "Checking on test4"
+	@diff ./testcases/4/out_90.dat_sorted ./testcases/4/myout.dat
+	@echo "Running on test5" 
+	@time ./fpt ./testcases/5/test5.dat 98 ./testcases/5/myout.dat
+	@echo "Checking on test5"
+	@diff ./testcases/5/out_98.dat_sorted ./testcases/5/myout.dat
+
 
 fptree_test: fptree
-	time ./fpt2 ./testcases/5/test5.dat 98 ./testcases/5/myout.dat
-	diff ./testcases/5/out_98.dat_sorted ./testcases/5/myout.dat
+	time ./fpt ./testcases/dummy4/test.dat 0 ./testcases/dummy4/myout.dat
+	
