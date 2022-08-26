@@ -1,14 +1,16 @@
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
-import subprocess
+from subprocess import STDOUT, TimeoutExpired, check_output
 from timeit import timeit
 
 def run_process(alg, thresh, inFile, outFile):
     command = f"./{alg} {inFile} {thresh} {outFile}.dat"
     print(command)
-    process = subprocess.Popen(command, shell=True)
-    process.wait()
+    try:
+        check_output(command, shell=True, stderr=STDOUT,timeout=3600)
+    except TimeoutExpired:
+        pass
 
 if __name__ == '__main__':
     inFile = sys.argv[1]
@@ -25,6 +27,7 @@ if __name__ == '__main__':
                 stmt="run_process(alg, thresh, inFile, outFile)",
                 number=1
             )
+            print(alg,thresh,time_taken)
             results[alg].append(time_taken)
     for alg in algs:
         plt.plot(thresholds, results[alg], label=alg)
