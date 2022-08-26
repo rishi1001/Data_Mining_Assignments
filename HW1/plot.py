@@ -30,6 +30,9 @@ if __name__ == '__main__':
             print(alg,thresh,time_taken)
             results[alg].append(time_taken)
     for alg in algs:
-        plt.plot(thresholds, results[alg], label=alg)
+        plt.plot(thresholds, results[alg], marker='s', label=alg)
     plt.legend()
+    plt.xlabel("Support %")
+    plt.ylabel("Time (s)")
+    plt.title("Apriori vs FPTree Performance Comparison")
     plt.savefig(outFile)
