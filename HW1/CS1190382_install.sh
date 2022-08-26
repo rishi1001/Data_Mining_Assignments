@@ -1,4 +1,4 @@
-#git clone https://github.com/rishi1001/Data_Mining_Assignments.git
+git clone https://github.com/rishi1001/Data_Mining_Assignments.git
 cd Data_Mining_Assignments
 unzip HW1_CS1190382.zip
 cd HW1_CS1190382
