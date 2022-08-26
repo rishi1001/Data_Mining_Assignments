@@ -27,5 +27,5 @@ of the frequent itemset).
 is becuase the maximum length of the frequent itemsets is small, so the number of file 
 reads in apriori is low.
 
-
+Note: For making the plot, we have set a timeout of 1hr for each support.
 
