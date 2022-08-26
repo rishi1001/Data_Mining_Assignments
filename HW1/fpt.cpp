@@ -9,12 +9,16 @@
 #include <algorithm>
 #include <climits>
 #include <csignal>
+#include <ctime>
 using namespace std;
 
 int x=98;           // this is hard coded, take command line input
 int tot_transactions=0;          // tot transactions (update it)
 vector<vector<int>> ans;   // GLOBAL VECTOR FOR ALL TRANSACTIONS
 string outputFileName;
+bool saved=false;
+time_t initialTime;
+
 struct Node{
     int val;
     Node *parent = nullptr;
@@ -28,6 +32,49 @@ struct fptree
     map<int,Node*> headerTable;
     bool single=true;
 };
+
+void writeOutput (string outputFileName){
+    // Need to convert the first string because of output
+    // 121 comes before 8 in answer
+    ofstream fout;
+    fout.open(outputFileName);
+    vector<string> sorted_ans;
+    for(auto i: ans){
+        string s="";
+        vector<string> vs;
+        for(auto j:i){
+            vs.push_back(to_string(j));
+        }
+        sort(vs.begin(),vs.end());
+        int vsn=vs.size();
+        for(int j=0;j<vsn;j++){
+            s+=vs[j];
+            if(j!=vsn-1) s+=" ";
+        }
+        s+='\n';
+        //fout<<s;
+        sorted_ans.push_back(s);
+    }
+    sort(sorted_ans.begin(),sorted_ans.end());
+    for(auto i: sorted_ans){
+        fout<<i;
+    }
+    fout.close();
+} 
+
+void checkTime(){
+    if (saved) {
+        return;
+    }
+    time_t curr;
+    time(&curr);
+    //cout<<"IN Checktime, "<<curr-initialTime<<endl;
+    if ((curr-initialTime)> 3300){
+        saved=true;
+        writeOutput(outputFileName);
+    }
+
+}
 
 bool isFrequent(int v){
     if(v*100>=x*tot_transactions){
@@ -163,6 +210,7 @@ struct fptree* generate(struct fptree* currentFptree,int value){
 void fpGrowth(struct fptree* tree, vector<int>& prefix){
     
     //TODO: Check single path 
+    checkTime();
     if (tree->single){
        mine(tree,prefix);
        return;
@@ -240,7 +288,9 @@ void fpt(string datasetName){
     bool found;
 
     map<int,int> frequencies =getFrequentElements(datasetName);
-    
+    if (frequencies.empty()){
+        return;
+    }
     while(!inFile.eof()){
         string s;
         getline(inFile,s);
@@ -311,52 +361,11 @@ void fpt(string datasetName){
 }
 
 
-void writeOutput (string outputFileName){
-    // Need to convert the first string because of output
-    // 121 comes before 8 in answer
-    ofstream fout;
-    fout.open(outputFileName);
-    vector<string> sorted_ans;
-    for(auto i: ans){
-        string s="";
-        vector<string> vs;
-        for(auto j:i){
-            vs.push_back(to_string(j));
-        }
-        sort(vs.begin(),vs.end());
-        int vsn=vs.size();
-        for(int j=0;j<vsn;j++){
-            s+=vs[j];
-            if(j!=vsn-1) s+=" ";
-        }
-        s+='\n';
-        //fout<<s;
-        sorted_ans.push_back(s);
-    }
-    sort(sorted_ans.begin(),sorted_ans.end());
-    for(auto i: sorted_ans){
-        fout<<i;
-    }
-    fout.close();
-} 
-
-void signalHandler( int signum ) {
-    cout << "Interrupt signal (" << signum << ") received.\n";
-    cout << "Please wait, saving file.\n";
-    writeOutput(outputFileName);    
-    exit(signum);  
-}
-
-void registerSignals(){
-    signal(SIGINT, signalHandler);              // ctrl + c
-    // signal(SIGTERM, signalHandler);
-    // signal(SIGQUIT, signalHandler);
-}
 
 int main(int argc, char **argv)
 {
-    registerSignals();
 
+    time(&initialTime);
     string datasetName = argv[1];
     x= stoi(argv[2]);
     outputFileName = argv[3];

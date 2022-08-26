@@ -7,12 +7,15 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include<ctime>
 
 using namespace std;
 
 int x=98;           // this is hard coded, take command line input
 vector<vector<int>> ans; // global, can save on interrupt
+bool saved=false;
 string outputFileName;
+time_t initialTime;
 
 bool binary_search(vector<int> &x, vector<vector<int>> &f){
     int n = f.size() - 1;
@@ -54,14 +57,52 @@ bool check(vector<int>&small, vector<int>&big){
     return false;
 } 
 
+void writeOutput (string outputFileName, vector<vector<int>>& ans){
+    ofstream fout;
+    fout.open(outputFileName);
+    vector<string> sorted_ans;
+    for(auto i: ans){
+        string s="";
+        vector<string> vs;
+        for(auto j:i){
+            vs.push_back(to_string(j));
+        }
+        sort(vs.begin(),vs.end());
+        int vsn=vs.size();
+        for(int j=0;j<vsn;j++){
+            s+=vs[j];
+            if(j!=vsn-1) s+=" ";
+        }
+        s+='\n';
+        //fout<<s;
+        sorted_ans.push_back(s);
+    }
+    sort(sorted_ans.begin(),sorted_ans.end());
+    for(auto i: sorted_ans){
+        fout<<i;
+    }
+    fout.close();
+} 
+
+
+void checkTime(){
+    if (saved) return;
+    time_t curr;
+    time(&curr);
+    //cout<<"IN Checktime, "<<curr-initialTime<<endl;
+    if ((curr-initialTime)> 3300){
+        saved=true;
+        writeOutput(outputFileName,ans);
+    }
+
+}
 vector<vector<int>> candidate_gen(vector<vector<int>> &f){
-    // for(auto i: f){
-    //     for(auto j:i) cout<<j<<" ";
-    //     cout<<"\n";
-    // }
+   
     vector<vector<int>> c;
     int n=f.size();
     for(int i=0;i<n;i++){
+        // 
+        checkTime();
         for(int j=i+1;j<n;j++){
             int n1=f[i].size();
             bool intersect=true;
@@ -147,26 +188,6 @@ void apriori(string datasetName){
             stringstream ss(s);
             int num;
 
-            // TODO: Optimizied here
-
-            // set<int> transaction;
-            // while(ss>>num){
-            //     transaction.insert(num);
-            // }
-            // // for(auto i: transaction) cout<<i<<" ";
-            // // cout<<"transaction done\n";
-            // //Checking which candidates are present in  the transaction
-            // for(int i=0;i<tot_c;i++){
-            //     bool present=true;
-            //     for(int j: c[i]){
-            //         if(transaction.find(j)==transaction.end()){
-            //             present=false;
-            //             break;
-            //         }
-            //     }
-            //     if(present) count[i]++;
-            // }
-
             // Optimized code
             vector<int> transaction;
             while(ss>>num){
@@ -196,82 +217,12 @@ void apriori(string datasetName){
     }
 }
 
-void writeOutput (string outputFileName, vector<vector<int>>& ans){
-    ofstream fout;
-    fout.open(outputFileName);
-    vector<string> sorted_ans;
-    for(auto i: ans){
-        string s="";
-        vector<string> vs;
-        for(auto j:i){
-            vs.push_back(to_string(j));
-        }
-        sort(vs.begin(),vs.end());
-        int vsn=vs.size();
-        for(int j=0;j<vsn;j++){
-            s+=vs[j];
-            if(j!=vsn-1) s+=" ";
-        }
-        s+='\n';
-        //fout<<s;
-        sorted_ans.push_back(s);
-    }
-    sort(sorted_ans.begin(),sorted_ans.end());
-    for(auto i: sorted_ans){
-        fout<<i;
-    }
-    fout.close();
-} 
 
-
-void signalHandler( int signum ) {
-    cout << "Interrupt signal (" << signum << ") received.\n";
-    cout << "Please wait, saving file.\n";
-    writeOutput(outputFileName,ans);    
-    exit(signum);  
-}
-
-void registerSignals(){
-    signal(SIGINT, signalHandler);              // ctrl + c
-    // signal(SIGTERM, signalHandler);
-    // signal(SIGQUIT, signalHandler);
-}
 
 int main(int argc, char **argv)
 {
     // associates standard input with input.txt 
-    // ifstream inFile;
-    // inFile.open("my_test.dat");
-    // while(!inFile.eof()){
-    //     string x;
-    //     getline(inFile,x);
-    //     stringstream ss(x);
-    //     int num;
-    //     vector<int> v;
-    //     while(ss>>num){
-    //         v.push_back(num);
-    //     }
-    //     // inFile>>x;
-    //     // if(x=='\n') {
-    //     //     cout<<"\n";
-    //     // }
-    //     cout<<v.size()<<": ";
-    //     for(auto i:v) cout<<i<<",";
-    //     cout<<"\n";
-    // }
-    // int x;
-    // // reads the input.txt file and stores in string x
-    // // getline(cin, x);
-    // inFile>>x;
-    // // prints string x in output.txt file
-    // cout << x << "\n";
-
-    // inFile>>x;
-    // // getline(cin, x);
-    // // prints string x in output.txt file
-    // cout << x; 
-    registerSignals();
-
+    time(&initialTime);
     string datasetName = argv[1];
     x= stoi(argv[2]);
     outputFileName = argv[3];

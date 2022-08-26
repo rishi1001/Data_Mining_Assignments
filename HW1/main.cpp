@@ -181,34 +181,6 @@ vector<vector<int>> apriori(string datasetName){
 
 }
 
-void writeOutput (string outputFileName, vector<vector<int>>& ans){
-    // Need to convert the first string because of output
-    // 121 comes before 8 in answer
-    ofstream fout;
-    fout.open(outputFileName);
-    vector<string> sorted_ans;
-    for(auto i: ans){
-        string s="";
-        vector<string> vs;
-        for(auto j:i){
-            vs.push_back(to_string(j));
-        }
-        sort(vs.begin(),vs.end());
-        int vsn=vs.size();
-        for(int j=0;j<vsn;j++){
-            s+=vs[j];
-            if(j!=vsn-1) s+=" ";
-        }
-        s+='\n';
-        //fout<<s;
-        sorted_ans.push_back(s);
-    }
-    sort(sorted_ans.begin(),sorted_ans.end());
-    for(auto i: sorted_ans){
-        fout<<i;
-    }
-    fout.close();
-} 
 
 
 int main(int argc, char **argv)
