@@ -1,0 +1,1 @@
+python elbow_plot.py $1 $3
