@@ -63,6 +63,7 @@ if __name__ == '__main__':
             number=1
         )
         print(alg,thresh,time_taken)
+        results[alg][i]= time_taken
         for alg in algs:
             plt.plot(min_support, results[alg], marker='s', label=alg)
         plt.legend()
