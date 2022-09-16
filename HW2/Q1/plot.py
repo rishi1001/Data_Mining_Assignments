@@ -31,7 +31,9 @@ def run_process_gaston(alg, thresh, inFile):
 if __name__ == '__main__':
     inFile = sys.argv[1]
     outFile = sys.argv[2]
-    min_support = [5,10,25,50,95]
+    # min_support = [5,10,25,50,95]
+    min_support = [50,95]
+
     algs = ['fsg', 'gSpan','gaston']
     results = {alg:[3600 for x in min_support] for alg in algs}
     for i,thresh in enumerate(min_support):

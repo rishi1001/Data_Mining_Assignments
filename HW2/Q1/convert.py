@@ -8,6 +8,8 @@ Lines = file.readlines()
 index = 0
 graph_id = 0
 n = len(Lines)
+m = {}
+symbol = 0
 while index<n:
     line = Lines[index].strip()
     index+=1
@@ -22,7 +24,10 @@ while index<n:
     for i in range(nodes):
         line = Lines[index].strip()
         index+=1
-        toWrite = 'v ' + str(i) + ' ' + line + '\n'
+        if line not in m:
+            m[line]=symbol
+            symbol+=1
+        toWrite = 'v ' + str(i) + ' ' + str(m[line]) + '\n'
         newF.write(toWrite)
     line = Lines[index].strip()
     index+=1
