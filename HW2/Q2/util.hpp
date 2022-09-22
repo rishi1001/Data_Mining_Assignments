@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 using namespace std;
-
+// TODO also need to add node labels
 struct Graph{
     vector<int> nodes;
     vector<tuple<int,int,int>> edges;
