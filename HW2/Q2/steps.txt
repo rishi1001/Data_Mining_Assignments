@@ -1,0 +1,6 @@
+1. GSPAN run (parameter minsup)
+2. Index construction (Incremental minsup and Discriminative)
+3. Read Index
+4. Query feature vector (subgraph ismorphism)
+5. Pruning of graphs (subset)
+6. Subgraph isomorphism on remaining grtaphs.
