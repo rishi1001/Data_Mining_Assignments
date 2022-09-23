@@ -1,0 +1,86 @@
+
+			#ifdef TRACE
+			// Stato figlio s0
+			if (s.GetTraceID()==NULL_TRACE_ID) 
+			{	
+				// Aggiorno id dello stato corrente
+				s.SetTraceID(trace->AppendCandidateState(NULL_TRACE_ID, 0));
+
+				trace->SetFeasible();
+			}
+			
+			// Chiamata ricorsiva subito dopo aver aggiunto uno stato
+			uint32_t current_depth = trace->GetLastDepth();
+
+			bool one_pair = false;
+			#endif
+
+			if (s.IsGoal())
+			{
+				#ifdef TRACE
+				// soluzione
+				trace->SetGoal();
+				#endif
+
+				solCount++;
+				if(storeSolutions)
+				{
+					MatchingSolution sol;
+					s.GetCoreSet(sol);
+					solutions.push_back(sol);
+				}
+				if (visit)
+				{
+					(*visit)(s);
+				}
+				return true;
+			}
+
+			if (s.IsDead())
+			{
+				#ifdef TRACE
+				// soluzione
+				trace->SetLeaf();
+				#endif
+				return false;
+			}
+
+			nodeID_t n1 = NULL_NODE, n2 = NULL_NODE;
+			bool found = false;
+
+			while (!found && s.NextPair(&n1, &n2, n1, n2))
+			{
+				#ifdef TRACE
+				// aggiungo ogni candidato
+				uint64_t child_id = trace->AppendCandidateState(s.GetTraceID(),current_depth+1);
+
+				// tengo conto che abbia generato almeno 1 candidato
+				one_pair = true;
+				#endif
+
+				if (s.IsFeasiblePair(n1, n2))
+				{
+					VFState s1(s);
+					s1.AddPair(n1, n2);
+
+					#ifdef TRACE
+					// feasible candidate
+					trace->SetFeasible();
+
+					// Avendo generato uno stato ne aggiorno il TRACE_ID
+					s1.SetTraceID(child_id);
+					#endif
+
+					found = FindFirstMatching(s1);
+				}
+
+			}
+
+			#ifdef TRACE
+			if (!one_pair)
+			{
+				trace->SetLeaf();
+			}
+			#endif
+
+			return found;

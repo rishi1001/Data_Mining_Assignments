@@ -63,7 +63,7 @@ std::string& remove_chars(std::string& s, const std::string& chars) {
 
 static long long state_counter = 0;
 
-int check_subgraph(Options opt, std::vector<int> nodes_q, std::vector<std::tuple<int,int,int>> edges_q, std::vector<int> nodes_g, std::vector<std::tuple<int,int,int>> edges_g)
+bool check_subgraph(Options opt, std::vector<int> nodes_q, std::vector<std::tuple<int,int,int>> edges_q, std::vector<int> nodes_g, std::vector<std::tuple<int,int,int>> edges_g)
 {
 	uint32_t n1, n2;
 	double timeAll = 0;
@@ -179,7 +179,8 @@ int check_subgraph(Options opt, std::vector<int> nodes_q, std::vector<std::tuple
 			#endif
 
 			state_t s0(&patt_graph, &targ_graph, class_patt.data(), class_targ.data(), classes_count, sorted.data());
-			me->FindAllMatchings(s0);
+			if(me->FindFirstMatching(s0))
+				break;
 			#ifdef TRACE
 			me->FlushTrace();
 			#endif
@@ -206,7 +207,6 @@ int check_subgraph(Options opt, std::vector<int> nodes_q, std::vector<std::tuple
 			std::cout<< me->SolutionToString(*it) << std::endl;
 		}
 	}
-
 	#endif
 	sols = me->GetSolutionsCount();
 	if(opt.verbose)
@@ -214,13 +214,10 @@ int check_subgraph(Options opt, std::vector<int> nodes_q, std::vector<std::tuple
 		std::cout<<"First Solution in: "<<timeFirst<<std::endl;
 		std::cout<<"Matching Finished in: "<<timeAll<<std::endl;
 		std::cout<<"Solutions: "<<sols<<std::endl;
-	}else
-	{
-		std::cout << sols << " " << timeFirst << " " << timeAll <<std::endl;
 	}
 	delete me;
   	delete pattloader;
   	delete targloader;
-	return 0;
+	return sols > 0;
 }
 #endif
