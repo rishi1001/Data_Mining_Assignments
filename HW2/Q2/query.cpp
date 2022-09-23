@@ -44,6 +44,7 @@ vector<int> intersection(vector<int>&  set, vector<int>& superset){
 
 vector<int> query_index(vector<int> &query_f, vector<vector<int>> &index,int dataset_size){
     vector<int> subset;
+//     TODO: Start form last index with one. Take the dataset when all are zeros
     for(int i=0;i<dataset_size;i++){
         subset.push_back(i);
     }
