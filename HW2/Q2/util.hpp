@@ -2,6 +2,8 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <assert.h>
+#include <sstream>
 using namespace std;
 // TODO also need to add node labels
 struct Graph{
@@ -16,12 +18,89 @@ struct Graph{
  * e <> <> <>
  * ..
 */
-void read_graph(Graph &g, ifstream &file);
-void write_graph(Graph &g, ofstream &file);
+
+/**
+ * @brief assumses that graph at beging 
+ * 
+ * @param g: graph 
+ * @param file : ifstream to take input
+ * TODO  for ZERO SIZED GRAPH  
+ *  
+ */
+void read_graph(Graph &g, ifstream &file){
+    string line;
+    int len;
+    int prev_index=-1,index,label,a,b;
+    while(true){
+        len=file.tellg();
+        getline(file,line);
+        stringstream ss(line);
+        char c;
+        ss>>c;
+        if(c=='v'){   // v index label
+            ss>>index;
+            ss>>label;
+            assert(index==prev_index+1);   // assuming in sorted order
+            prev_index=index;
+            g.nodes.push_back(label);
+        }
+        else if(c=='e'){  // e a b label
+            ss>>a;
+            ss>>b;
+            ss>>label;
+            g.edges.push_back({a,b,label});
+        }
+        else{  // graph os complete restoring ifstream
+            file.seekg(len ,std::ios_base::beg);
+            break;
+        }
+    }
+}
+void write_graph(Graph &g, ofstream &file){
+    string line="";
+    for(int i=0;i<g.nodes.size();i++){
+        line="v "+to_string(i)+' '+to_string(g.nodes[i])+'\n';
+        file<<line;
+    }
+    for(int i=0;i<g.edges.size();i++){
+        line="v "+to_string(get<0>(g.edges[i]))+' '+to_string(get<1>(g.edges[i]))+' '+to_string(get<2>(g.edges[i]))+'\n';
+        file<<line;
+    }
+}
 
 
-void read_int(int x, ifstream &file);
+void read_int(int &x, ifstream &file){  // t # support
+    string line;
+    getline(file,line);
+    stringstream ss(line);
+    char c;
+    ss>>c;
+    assert(c=='t');
+    ss>>c; 
+    assert(c=='#');
+    ss>>x;
+}
+
+// Do we need this
 void write_int(int x, ofstream &file);
 
-void read_vector(vector<int> &v, ifstream &file);
-void write_vector(vector<int> &v, ofstream &file);
+void read_vector(vector<int> &v, ifstream &file){
+    string line;
+    getline(file,line);
+    stringstream ss(line);
+    char c;
+    ss>>c;
+    assert(c=='x');
+    int num;
+    while(ss>>num){
+        v.push_back(num);
+    }
+}
+void write_vector(vector<int> &v, ofstream &file){
+    string line='x';
+    for(int x:v){
+        line+=' '+to_string(x);
+    }
+    line+='\n';
+    file<<line;
+}
