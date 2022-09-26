@@ -21,6 +21,7 @@ bool good_feature(Graph &g, int support ,vector<int>& indices,map<int,vector<int
     int required_support=get_support(g.edges.size(),initial_support);
     return  (support> required_support) && (check_discriminative(g,indices,m,gamma));
 }
+
 // we can do this in script
 void run_gspan(string dataset_file_name, string out_file_name, float support);
 
@@ -45,13 +46,15 @@ void construct_index(string feat_file_name, string inverted_index_file_name, str
     ifstream gSpan_output(outfile);
     while(true){
         // Add code for breaking if stream is empty
-        
+        if (gSpan_output.eof()) break;
         /* format 
             t #index <support>
             graph
             x <inverted index>
         */
         int support; // Add code to first read support from output
+        bool empty=read_int(support,gSpan_output);
+        if(!empty) break;
         
         Graph potent_feature;
         read_graph(potent_feature,gSpan_output);

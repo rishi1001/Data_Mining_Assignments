@@ -31,7 +31,8 @@ void read_graph(Graph &g, ifstream &file){
     string line;
     int len;
     int prev_index=-1,index,label,a,b;
-    while(true){
+    //cout<<"hehe\n";
+    while(!file.eof()){
         len=file.tellg();
         getline(file,line);
         stringstream ss(line);
@@ -43,12 +44,14 @@ void read_graph(Graph &g, ifstream &file){
             assert(index==prev_index+1);   // assuming in sorted order
             prev_index=index;
             g.nodes.push_back(label);
+            //cout<<label<<endl;
         }
         else if(c=='e'){  // e a b label
             ss>>a;
             ss>>b;
             ss>>label;
             g.edges.push_back({a,b,label});
+            //cout<<a<<" "<<b<<endl;
         }
         else{  // graph os complete restoring ifstream
             file.seekg(len ,std::ios_base::beg);
@@ -63,22 +66,44 @@ void write_graph(Graph &g, ofstream &file){
         file<<line;
     }
     for(int i=0;i<g.edges.size();i++){
-        line="v "+to_string(get<0>(g.edges[i]))+' '+to_string(get<1>(g.edges[i]))+' '+to_string(get<2>(g.edges[i]))+'\n';
+        line="e "+to_string(get<0>(g.edges[i]))+' '+to_string(get<1>(g.edges[i]))+' '+to_string(get<2>(g.edges[i]))+'\n';
         file<<line;
     }
 }
 
 
-void read_int(int &x, ifstream &file){  // t # support
+bool read_int(int &x, ifstream &file){  // t # index * support
     string line;
-    getline(file,line);
+    bool found=false;
+    while(!file.eof()){
+        getline(file,line);
+        if(line.size()>0){
+            found=true;
+            break;
+        }
+    }
+    if(!found) return false;
     stringstream ss(line);
     char c;
     ss>>c;
+    //cout<<line<<" "<<c<<" "<<int(c)<<" "<<int('t')<<endl;
+    // cout<<"here0\n";
+    // cout<<line<<endl;
+    //cout<<"here\n";
+    //cout<<c<<" "<<int(c)<<endl;
+    //cout<<"here1\n";
+    //cout<<int('t')<<endl;
+    //cout<<"here2\n";
     assert(c=='t');
+    //cout<<"here3\n";
+
     ss>>c; 
     assert(c=='#');
     ss>>x;
+    ss>>c;
+    assert(c=='*');
+    ss>>x;
+    return true;
 }
 
 // Do we need this
@@ -94,10 +119,13 @@ void read_vector(vector<int> &v, ifstream &file){
     int num;
     while(ss>>num){
         v.push_back(num);
+        //cout<<num<<" ";
     }
+    //cout<<endl;
 }
 void write_vector(vector<int> &v, ofstream &file){
-    string line='x';
+    string line="";
+    line+='x';
     for(int x:v){
         line+=' '+to_string(x);
     }

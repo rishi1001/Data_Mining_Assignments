@@ -1,7 +1,11 @@
 #include "util.hpp"
+#include "vf3lib/subgraph.hpp"
 #include <assert.h>
 
-void read_index(string inverted_index_file_name, string feature_index_file_name, string graph_index_file_name, vector<Graph> &graphs, vector<Graph> &feature_graphs, vector<vector<int>> &index);
+
+void read_index(string inverted_index_file_name, string feature_index_file_name, string graph_index_file_name, vector<Graph> &graphs, vector<Graph> &feature_graphs, vector<vector<int>> &index){
+    
+}
 
 /**
  * Get feature vector for graph
@@ -60,7 +64,8 @@ vector<int> query_index(vector<int> &query_f, vector<vector<int>> &index,int dat
  * Checks if q is subgraph of g
  */
 bool is_subgraph(Graph &q, Graph &g){
-
+    // What to pass for 
+    return check_subgraph(0,q.nodes,q.edges,g.nodes,g.edges);
 }
 
 /**
