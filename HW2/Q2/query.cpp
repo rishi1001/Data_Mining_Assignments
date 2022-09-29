@@ -1,5 +1,6 @@
 #include "util.hpp"
 #include "vf3lib/subgraph.hpp"
+#include "vf3lib/include/Options.hpp"
 #include <assert.h>
 
 
@@ -65,7 +66,8 @@ vector<int> query_index(vector<int> &query_f, vector<vector<int>> &index,int dat
  */
 bool is_subgraph(Graph &q, Graph &g){
     // What to pass for 
-    return check_subgraph(0,q.nodes,q.edges,g.nodes,g.edges);
+    Options opt;
+    return check_subgraph(opt,q.nodes,q.edges,g.nodes,g.edges);
 }
 
 /**
