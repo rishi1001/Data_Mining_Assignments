@@ -1,9 +1,23 @@
 #include "util.hpp"
 #include <assert.h>
+#include <iostream>
 #include<map>
+#include <chrono>
+
+using namespace std::chrono;
+
+// Some parameters
+int Dataset_size;
+float initial_support;
+float gamma;
+string gSpan_output= "formatted.txt.fp";
+string dataset_size_file="totGraphs.txt";
+string Feature_file_name="Features.txt";
+string Inverted_file_name="index.txt";
+
 
 // Returns the support for k size subgraph  
-int get_support(int k,int initial_support){
+float get_support(int k,float initial_support){
     // currently just returing constant suport for each subgraph
     return initial_support; 
 }
@@ -17,22 +31,17 @@ bool check_discriminative(Graph &g,vector<int>& indices, map<int,vector<int>>& m
 }   
 
 // returns true if we should include subgraph g in the feature vector
-bool good_feature(Graph &g, int support ,vector<int>& indices,map<int,vector<int>>& m, float gamma, int initial_support ){
-    int required_support=get_support(g.edges.size(),initial_support);
+bool good_feature(Graph &g, int support ,vector<int>& indices,map<int,vector<int>>& m, float gamma, float initial_support ){
+    float required_support=get_support(g.edges.size(),initial_support);
     return  (support> required_support) && (check_discriminative(g,indices,m,gamma));
 }
 
-// we can do this in script
-void run_gspan(string dataset_file_name, string out_file_name, float support);
-
 /**
+ * 
+ * 
  * Read output of gspan and contruct index
  */
-// Also need total number of graphs in the dataset
-int Dataset_size;
-int initial_support;
-string outfile; // file storing output of GSpan
-void construct_index(string feat_file_name, string inverted_index_file_name, string feature_index_file_name, string graph_index_file_name, float gamma){
+void construct_index(string feat_file_name, string inverted_index_file_name, string graph_index_file_name, float gamma,float initial_support){
     //TODO 
     map<int,vector<int>> m; // map to store inverted index of the last seen subgraph of size k
     vector<Graph> features; // Graph which are discriminative and frequent
@@ -43,7 +52,7 @@ void construct_index(string feat_file_name, string inverted_index_file_name, str
     m[0]={};
     for(int i=0;i<Dataset_size;i++) m[0].push_back(i);
     
-    ifstream gSpan_output(outfile);
+    ifstream gSpan_output(graph_index_file_name);
     while(true){
         // Add code for breaking if stream is empty
         if (gSpan_output.eof()) break;
@@ -90,6 +99,23 @@ void construct_index(string feat_file_name, string inverted_index_file_name, str
 
 }
 
-int main(){
+int main(int argc, char** argv){
+    cout<<"Creating Index\n";
+    auto start = high_resolution_clock::now();
+    
+    // reading Dataset size
+    ifstream temp(dataset_size_file);
+    temp>>Dataset_size;
+    temp.close();
+
+    initial_support=stof(argv[1]);
+    gamma=stof(argv[2]);
+
+    construct_index(Feature_file_name,Inverted_file_name,gSpan_output,gamma,initial_support);
+
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<seconds>(stop - start);
+    cout << "Total Time taken: "<< duration.count() << " seconds" << endl;
     return 0;
 }

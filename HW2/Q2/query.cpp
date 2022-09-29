@@ -2,6 +2,16 @@
 #include "vf3lib/subgraph.hpp"
 #include "vf3lib/include/Options.hpp"
 #include <assert.h>
+#include <iostream>
+#include <chrono>
+
+using namespace std::chrono;
+
+int Dataset_size;
+string dataset_size_file="totGraphs.txt";
+string input_dataset_filename="input.txt";
+string Feature_file_name="Features.txt";
+string Inverted_file_name="index.txt";
 
 /**
  * @brief Reading from the inverted index and graph file. And inserting into the desired vectors.
@@ -75,7 +85,6 @@ vector<int> intersection(vector<int>&  set, vector<int>& superset){
 /**
  * Find subset of graphs which are relevant, using the query feature vector and the index 
  */
-
 vector<int> query_index(Graph &q,vector<Graph> &feature_graphs, vector<vector<int>> &index,int dataset_size){
     vector<int> subset;
 //     TODO: Start form last index with one. Take the dataset when all are zeros
@@ -102,17 +111,59 @@ bool is_subgraph(Graph &q, Graph &g){
 /**
  * Finds final results and outputs them
  */
-void find_supergraphs_from_subset(vector<int> &subset, Graph &q, vector<Graph> &graphs){
+vector<int> find_supergraphs_from_subset(vector<int> &subset, Graph &q, vector<Graph> &graphs){
     vector<int> final_graphs;
     for(int ind:subset){
         if(is_subgraph(q,graphs[ind])){
             final_graphs.push_back(ind);
         }
     }
-
+    return final_graphs;
     // TODO output final_graphs in the desired format
 }
 
-int main(){
-    return 0;
+
+void write_to_file(vector<int>& v,ofstream &file){
+    string t="";
+    for(int i=0;i<v.size()-1;i++){
+        t=to_string(v[i])+'\t';
+        file<<t;
+    }
+    t=to_string(v[v.size()-1])+'\n';
+    file<<t;
+}
+int main(int argc, char** argv){
+    vector<Graph> graphs;
+    vector<Graph> feature_graphs;
+    vector<vector<int>> index;
+    
+    cout<<"Reading Index\n";
+    read_index(Inverted_file_name,Feature_file_name,input_dataset_filename,graphs,feature_graphs,index);
+    cout<<"Reading Index done\n";
+    Dataset_size=graphs.size();
+    string query_file_name,output_file_name;
+    query_file_name=argv[1];
+    output_file_name=argv[2];
+    // cout<<"Enter query file name: ";
+    // cin>>query_file_name;
+    auto start = high_resolution_clock::now();
+    
+    ifstream queries(query_file_name);
+    int i=0;
+    ofstream out(output_file_name);
+    while(!queries.eof()){
+        cout<<"Find Indices for query "<<i<<endl;
+        i++;
+        Graph query;
+        read_graph(query,queries);
+        vector<int> ind=query_index(query,feature_graphs,index,Dataset_size);
+        ind = find_supergraphs_from_subset(ind,query,graphs);
+        write_to_file(ind,out);
+    }
+    queries.close();
+    out.close();
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<seconds>(stop - start);
+    cout << "Total Time taken: "<< duration.count() << " seconds" << endl;
+
 }
