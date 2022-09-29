@@ -1,7 +1,7 @@
 #include "util.hpp"
 #include <assert.h>
 #include <iostream>
-#include<map>
+#include <map>
 #include <chrono>
 
 using namespace std::chrono;

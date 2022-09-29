@@ -4,6 +4,7 @@
 #include <string>
 #include <assert.h>
 #include <sstream>
+#include<tuple>
 using namespace std;
 // TODO also need to add node labels
 struct Graph{
@@ -50,7 +51,7 @@ void read_graph(Graph &g, ifstream &file){
             ss>>a;
             ss>>b;
             ss>>label;
-            g.edges.push_back({a,b,label});
+            g.edges.push_back(make_tuple(a,b,label));
             //cout<<a<<" "<<b<<endl;
         }
         else{  // graph os complete restoring ifstream

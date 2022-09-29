@@ -9,7 +9,7 @@ using namespace std::chrono;
 
 int Dataset_size;
 string dataset_size_file="totGraphs.txt";
-string input_dataset_filename="input.txt";
+string input_dataset_filename="formatted.txt";
 string Feature_file_name="Features.txt";
 string Inverted_file_name="index.txt";
 
