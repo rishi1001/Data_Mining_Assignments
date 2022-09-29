@@ -3,7 +3,16 @@
 #include "vf3lib/include/Options.hpp"
 #include <assert.h>
 
-
+/**
+ * @brief Reading from the inverted index and graph file. And inserting into the desired vectors.
+ * 
+ * @param inverted_index_file_name 
+ * @param feature_index_file_name 
+ * @param graph_index_file_name 
+ * @param graphs 
+ * @param feature_graphs 
+ * @param index 
+ */
 void read_index(string inverted_index_file_name, string feature_index_file_name, string graph_index_file_name, vector<Graph> &graphs, vector<Graph> &feature_graphs, vector<vector<int>> &index){
     ifstream features(feature_index_file_name);
     while(!features.eof()){
@@ -31,16 +40,16 @@ void read_index(string inverted_index_file_name, string feature_index_file_name,
 /**
  * Get feature vector for graph
  */
-vector<int> get_feature_vector(Graph &q, vector<Graph> &feature_graphs){
-    vector<int> feature_vector;
-    for(Graph g:feature_graphs){
-        if (is_subgraph(g,q)){
-            feature_vector.push_back(1);
-        }
-        else feature_vector.push_back(0);
-    }
-    return feature_vector;
-}
+// vector<int> get_feature_vector(Graph &q, vector<Graph> &feature_graphs){
+//     vector<int> feature_vector;
+//     for(Graph g:feature_graphs){
+//         if (is_subgraph(g,q)){
+//             feature_vector.push_back(1);
+//         }
+//         else feature_vector.push_back(0);
+//     }
+//     return feature_vector;
+// }
 
 /*
 returns interesct vector of set and superset
@@ -67,15 +76,15 @@ vector<int> intersection(vector<int>&  set, vector<int>& superset){
  * Find subset of graphs which are relevant, using the query feature vector and the index 
  */
 
-vector<int> query_index(vector<int> &query_f, vector<vector<int>> &index,int dataset_size){
+vector<int> query_index(Graph &q,vector<Graph> &feature_graphs, vector<vector<int>> &index,int dataset_size){
     vector<int> subset;
 //     TODO: Start form last index with one. Take the dataset when all are zeros
     for(int i=0;i<dataset_size;i++){
         subset.push_back(i);
     }
     for(int i=0;i<index.size();i++){
-        if(query_f[i]==1){
-            subset=intersection(subset,index[i]);
+        if(is_subgraph(feature_graphs[i],q)){
+            subset = intersection(subset,index[i]);
         }
     }
     return subset;
