@@ -5,7 +5,27 @@
 
 
 void read_index(string inverted_index_file_name, string feature_index_file_name, string graph_index_file_name, vector<Graph> &graphs, vector<Graph> &feature_graphs, vector<vector<int>> &index){
-    
+    ifstream features(feature_index_file_name);
+    while(!features.eof()){
+        Graph g;
+        read_graph(g,features);
+        feature_graphs.push_back(g);
+    }
+    ifstream inverted_index(inverted_index_file_name);
+    while(!inverted_index.eof()){
+        vector<int> v;
+        read_vector(v,inverted_index);
+        index.push_back(v);
+    }
+    ifstream graph_index(graph_index_file_name);
+    while(!graph_index.eof()){
+        string dummy_line;              
+        getline(graph_index,dummy_line);                // for the first line of t # 0
+        if(dummy_line=="") break;                // done reading
+        Graph g;
+        read_graph(g,graph_index);
+        graphs.push_back(g);
+    }
 }
 
 /**
