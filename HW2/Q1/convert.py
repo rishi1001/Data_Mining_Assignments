@@ -3,6 +3,7 @@
 file = open('Yeast/167.txt_graph', 'r')
 
 newF = open('formatted.txt', 'w')
+totGraphs = open('totGraphs.txt', 'w')
 Lines = file.readlines()
 # print(Lines[:5])  
 index = 0
@@ -41,6 +42,7 @@ while index<n:
     index+=1            # TODO check this, there is an empty line after each graph
     print(graph_id,index)
 
+totGraphs.write(str(graph_id))
 file.close()
 newF.close()
     

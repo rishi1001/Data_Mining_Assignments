@@ -31,6 +31,7 @@ def run_process_gaston(alg, thresh, inFile):
 if __name__ == '__main__':
     inFile = sys.argv[1]
     outFile = sys.argv[2]
+    totGraphs = int(open('totGraphs.txt', 'r').read())
     # min_support = [5,10,25,50,95]
     min_support = [50,95]
 
@@ -48,7 +49,8 @@ if __name__ == '__main__':
         print(alg,thresh,time_taken)
         results[alg][i]= time_taken
         alg = 'gSpan'
-        setup = f"from __main__ import run_process_gSpan;alg = \"{alg}\";thresh = {thresh};inFile = \"{inFile}\""
+        gSpan_thresh = thresh/100
+        setup = f"from __main__ import run_process_gSpan;alg = \"{alg}\";thresh = {gSpan_thresh};inFile = \"{inFile}\""
         # print(setup)
         time_taken = timeit(
             setup=setup,
@@ -57,7 +59,8 @@ if __name__ == '__main__':
         )
         print(alg,thresh,time_taken)
         alg = 'gaston'
-        setup = f"from __main__ import run_process_gaston;alg = \"{alg}\";thresh = {thresh};inFile = \"{inFile}\""
+        gaston_thresh = thresh*totGraphs
+        setup = f"from __main__ import run_process_gaston;alg = \"{alg}\";thresh = {gaston_thresh};inFile = \"{inFile}\""
         # print(setup)
         time_taken = timeit(
             setup=setup,
