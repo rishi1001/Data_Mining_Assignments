@@ -27,7 +27,7 @@ class VectorARGLoader: public ARGLoader<Node, Edge> {
          * @param in The input stream
          * @param undirected If true, the graph is undirected
          */
-        VectorARGLoader(std::vector<int> v_nodes, std::vector<std::tuple<int,int,int>> v_edges, bool undirected=false);
+        VectorARGLoader(std::vector<int> &v_nodes, std::vector<std::tuple<int,int,int>> &v_edges, bool undirected=false);
         virtual uint32_t NodeCount() const;
         virtual Node GetNodeAttr(nodeID_t node);
         virtual uint32_t OutEdgeCount(nodeID_t node) const;
@@ -46,14 +46,16 @@ class VectorARGLoader: public ARGLoader<Node, Edge> {
 
 template <typename Node, typename Edge>
 VectorARGLoader<Node,Edge>
-::VectorARGLoader(std::vector<int> v_nodes, std::vector<std::tuple<int,int,int>> v_edges, bool undirected) {
+::VectorARGLoader(std::vector<int> &v_nodes, std::vector<std::tuple<int,int,int>> &v_edges, bool undirected) {
     last_edge_node = NULL_NODE;
+
     node_count = v_nodes.size();
-    nodes.resize(node_count);
+    nodes.reserve(node_count);
+    nodes.insert(nodes.end(),v_nodes.begin(),v_nodes.end());
+
     edges.resize(node_count);
     uint32_t edge_count;
     nodeID_t i, j, n1, n2;
-    nodes.insert(nodes.end(),v_nodes.begin(),v_nodes.end());
 
     edge_count = v_edges.size();
     for(std::tuple<nodeID_t,nodeID_t,int> x : v_edges) {
