@@ -85,8 +85,10 @@ void construct_index(string feat_file_name, string inverted_index_file_name, str
 
     // dump features to files
     ofstream features_file(feat_file_name);
+    string emptyLine = "";
     for(Graph g:features){
         write_graph(g,features_file);
+        features_file<<emptyLine;
     }
     features_file.close();
 

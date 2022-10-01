@@ -28,6 +28,8 @@ void read_index(string inverted_index_file_name, string feature_index_file_name,
     while(!features.eof()){
         Graph g;
         read_graph(g,features);
+        string dummy_line;
+        getline(features,dummy_line);
         feature_graphs.push_back(g);
     }
     ifstream inverted_index(inverted_index_file_name);
