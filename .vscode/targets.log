@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Aug 26 19:47:32 2022
+# Make data base, printed on Sat Oct  1 10:22:16 2022
 
 # Variables
 
@@ -23,7 +23,7 @@ SSH_AGENT_LAUNCHER = gnome-keyring
 # environment
 GJS_DEBUG_OUTPUT = stderr
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-85d2fa7d-56b7-4ffc-9c2d-f3f5c7a829d1.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-822e1032-adc7-478b-ab95-2f51f9e5714a.sock
 # environment
 MANDATORY_PATH = /usr/share/gconf/pop.mandatory.path
 # environment
@@ -93,13 +93,13 @@ MAKEFILE_LIST :=
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_PID = 4216
+VSCODE_PID = 55845
 # environment
 XDG_SESSION_TYPE = x11
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
 # environment
-SESSION_MANAGER = local/pop-os:@/tmp/.ICE-unix/1786,unix/pop-os:/tmp/.ICE-unix/1786
+SESSION_MANAGER = local/pop-os:@/tmp/.ICE-unix/1810,unix/pop-os:/tmp/.ICE-unix/1810
 # automatic
 *F = $(notdir $*)
 # environment
@@ -135,7 +135,7 @@ MAKEFILES :=
 # automatic
 ^F = $(notdir $^)
 # environment
-INVOCATION_ID = 41bc8eef387c4b259078810112ebfd1b
+INVOCATION_ID = be2fe2ef35914c659fe517d5287d4ddb
 # environment
 VSCODE_LOG_NATIVE = false
 # environment
@@ -165,7 +165,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := 
 # environment
-SYSTEMD_EXEC_PID = 1806
+SYSTEMD_EXEC_PID = 1829
 # environment
 DISPLAY = :1
 # environment
@@ -177,9 +177,9 @@ DEFAULTS_PATH = /usr/share/gconf/pop.default.path
 # default
 MAKE_VERSION := 4.3
 # environment
-MANAGERPID = 1537
+MANAGERPID = 1589
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 4216
+GIO_LAUNCHED_DESKTOP_FILE_PID = 55845
 # environment
 _ = /usr/share/code/code
 # environment
@@ -187,7 +187,7 @@ XDG_RUNTIME_DIR = /run/user/1000
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-JOURNAL_STREAM = 8:31457
+JOURNAL_STREAM = 8:39085
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -221,7 +221,7 @@ GDMSESSION = pop
 
 # Directories
 
-# . (device 66311, inode 6430335): 9 files, no impossibilities.
+# . (device 66311, inode 6425856): 9 files, no impossibilities.
 
 # 9 files, no impossibilities in 1 directories.
 
@@ -273,12 +273,12 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 17 / storage = 156 B / avg = 9 B
-# current buf: size = 8162 B / used = 156 B / count = 17 / avg = 9 B
+# strcache buffers: 1 (0) / strings = 17 / storage = 150 B / avg = 8 B
+# current buf: size = 8162 B / used = 150 B / count = 17 / avg = 8 B
 
 # strcache performance: lookups = 20 / hit rate = 15%
 # hash-table stats:
 # Load=17/8192=0%, Rehash=0, Collisions=0/20=0%
-# Finished Make data base on Fri Aug 26 19:47:32 2022
+# Finished Make data base on Sat Oct  1 10:22:16 2022
 
  
