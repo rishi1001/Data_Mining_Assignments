@@ -8,8 +8,10 @@
 using namespace std::chrono;
 
 int Dataset_size;
-string dataset_size_file="totGraphs.txt";
-string input_dataset_filename="formatted.txt";
+// string dataset_size_file="totGraphs.txt";
+// string input_dataset_filename="formatted.txt";
+string dataset_size_file="dummy_totGraphs.txt";
+string input_dataset_filename="dummy.txt";
 string Feature_file_name="Features.txt";
 string Inverted_file_name="index.txt";
 
@@ -33,12 +35,15 @@ void read_index(string inverted_index_file_name, string feature_index_file_name,
         // getline(features,dummy_line);
         feature_graphs.push_back(g);
     }
+    // cout<<"Tot Featuers : "<<feature_graphs.size()<<"\n";
     ifstream inverted_index(inverted_index_file_name);
     while(!inverted_index.eof()){
         vector<int> v;
         read_vector(v,inverted_index);
+        if(v.empty()) break;
         index.push_back(v);
     }
+    // cout<<"Tot Indexes : "<<index.size()<<"\n";
     ifstream graph_index(graph_index_file_name);
     while(!graph_index.eof()){
         string dummy_line;              
@@ -103,9 +108,13 @@ vector<int> query_index(Graph &q,vector<Graph> &feature_graphs, vector<vector<in
     for(int i=0;i<dataset_size;i++){
         subset.push_back(i);
     }
+    // cout<<"Subset Size :"<<subset.size()<<"\n";
+    // cout<<"Index Size :"<<index.size()<<"\n";
     for(int i=0;i<index.size();i++){
+        // cout<<"here : "<<i<<"\n";
         if(is_subgraph(feature_graphs[i],q)){
             subset = intersection(subset,index[i]);
+            // cout<<"subgraph found: "<<i<<"\n";
         }
     }
     return subset;
@@ -127,12 +136,13 @@ vector<int> find_supergraphs_from_subset(vector<int> &subset, Graph &q, vector<G
 
 
 void write_to_file(vector<int>& v,ofstream &file){
+    // cout<<"ans size: "<<v.size()<<"\n";
     string t="";
-    for(int i=0;i<v.size()-1;i++){
+    for(int i=0;i<v.size();i++){            // v can be empty
         t=to_string(v[i])+'\t';
         file<<t;
     }
-    t=to_string(v[v.size()-1])+'\n';
+    t='\n';
     file<<t;
 }
 int main(int argc, char** argv){
@@ -157,10 +167,16 @@ int main(int argc, char** argv){
     while(!queries.eof()){
         cout<<"Find Indices for query "<<i<<endl;
         i++;
+        string dummy_line;
+        getline(queries,dummy_line);
+        if(dummy_line=="") break;
         Graph query;
         read_graph(query,queries);
+        // cout<<"Done Reading\n";
         vector<int> ind=query_index(query,feature_graphs,index,Dataset_size);
+        // cout<<"Got ind: "<<ind.size() <<"\n";
         ind = find_supergraphs_from_subset(ind,query,graphs);
+        // cout<<"About to Write\n";
         write_to_file(ind,out);
     }
     queries.close();

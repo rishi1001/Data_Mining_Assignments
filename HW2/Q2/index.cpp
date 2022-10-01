@@ -10,8 +10,10 @@ using namespace std::chrono;
 int Dataset_size;
 float initial_support;
 float gamma;
-string gSpan_output= "formatted.txt.fp";
-string dataset_size_file="totGraphs.txt";
+// string gSpan_output= "formatted.txt.fp";
+string gSpan_output= "dummy.txt.fp";
+// string dataset_size_file="totGraphs.txt";
+string dataset_size_file="dummy_totGraphs.txt";
 string Feature_file_name="Features.txt";
 string Inverted_file_name="index.txt";
 
