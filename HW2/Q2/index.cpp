@@ -26,6 +26,7 @@ float get_support(int k,float initial_support){
 bool check_discriminative(Graph &g,vector<int>& indices, map<int,vector<int>>& m, float gamma){
     int g_size=g.edges.size();
     vector<int> parent=m[g_size-1];  
+    // cout<<"here: "<<g_size<<":"<<m[g_size-1].size()<<"\n";
     float discriminating_factor= (parent.size()*(1.0))/indices.size();
     return discriminating_factor>gamma; // true is discriminating_factor is greater than gamma
 }   
@@ -49,8 +50,8 @@ void construct_index(string feat_file_name, string inverted_index_file_name, str
                                          // in datset in which features[i] is present 
     
     // size 0 is contained in each graph
-    m[0]={};
-    for(int i=0;i<Dataset_size;i++) m[0].push_back(i);
+    m[-1]={};
+    for(int i=0;i<Dataset_size;i++) m[-1].push_back(i);
     
     ifstream gSpan_output(graph_index_file_name);
     while(true){
@@ -85,7 +86,7 @@ void construct_index(string feat_file_name, string inverted_index_file_name, str
 
     // dump features to files
     ofstream features_file(feat_file_name);
-    string emptyLine = "";
+    string emptyLine = "\n";
     for(Graph g:features){
         write_graph(g,features_file);
         features_file<<emptyLine;

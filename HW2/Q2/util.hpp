@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <assert.h>
@@ -36,6 +37,10 @@ void read_graph(Graph &g, ifstream &file){
     while(!file.eof()){
         len=file.tellg();
         getline(file,line);
+        if(line=="") {
+            // file.seekg(len ,std::ios_base::beg);
+            break;
+        }
         stringstream ss(line);
         char c;
         ss>>c;
@@ -113,6 +118,8 @@ void write_int(int x, ofstream &file);
 void read_vector(vector<int> &v, ifstream &file){
     string line;
     getline(file,line);
+    // cout<<"Here: "<<line<<"\n";
+    if(line=="") return;
     stringstream ss(line);
     char c;
     ss>>c;

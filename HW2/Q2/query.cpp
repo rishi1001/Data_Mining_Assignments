@@ -28,8 +28,9 @@ void read_index(string inverted_index_file_name, string feature_index_file_name,
     while(!features.eof()){
         Graph g;
         read_graph(g,features);
-        string dummy_line;
-        getline(features,dummy_line);
+        if(g.nodes.empty()) break;          // due to empty line
+        // string dummy_line;
+        // getline(features,dummy_line);
         feature_graphs.push_back(g);
     }
     ifstream inverted_index(inverted_index_file_name);
@@ -85,6 +86,15 @@ vector<int> intersection(vector<int>&  set, vector<int>& superset){
 }
 
 /**
+ * Checks if q is subgraph of g
+ */
+bool is_subgraph(Graph &q, Graph &g){
+    // What to pass for 
+    Options opt;
+    return check_subgraph(opt,q.nodes,q.edges,g.nodes,g.edges);
+}
+
+/**
  * Find subset of graphs which are relevant, using the query feature vector and the index 
  */
 vector<int> query_index(Graph &q,vector<Graph> &feature_graphs, vector<vector<int>> &index,int dataset_size){
@@ -99,15 +109,6 @@ vector<int> query_index(Graph &q,vector<Graph> &feature_graphs, vector<vector<in
         }
     }
     return subset;
-}
-
-/**
- * Checks if q is subgraph of g
- */
-bool is_subgraph(Graph &q, Graph &g){
-    // What to pass for 
-    Options opt;
-    return check_subgraph(opt,q.nodes,q.edges,g.nodes,g.edges);
 }
 
 /**
