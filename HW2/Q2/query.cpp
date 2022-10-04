@@ -8,10 +8,10 @@
 using namespace std::chrono;
 
 int Dataset_size;
-// string dataset_size_file="totGraphs.txt";
-// string input_dataset_filename="formatted.txt";
-string dataset_size_file="dummy_totGraphs.txt";
-string input_dataset_filename="dummy.txt";
+string dataset_size_file="totGraphs.txt";
+string input_dataset_filename="formatted.txt";
+// string dataset_size_file="dummy_totGraphs.txt";
+// string input_dataset_filename="dummy.txt";
 string Feature_file_name="Features.txt";
 string Inverted_file_name="index.txt";
 
@@ -96,6 +96,7 @@ vector<int> intersection(vector<int>&  set, vector<int>& superset){
 bool is_subgraph(Graph &q, Graph &g){
     // What to pass for 
     Options opt;
+    opt.undirected = true;
     return check_subgraph(opt,q.nodes,q.edges,g.nodes,g.edges);
 }
 
@@ -127,6 +128,7 @@ vector<int> find_supergraphs_from_subset(vector<int> &subset, Graph &q, vector<G
     vector<int> final_graphs;
     for(int ind:subset){
         if(is_subgraph(q,graphs[ind])){
+            // cout<<"here : "<< ind <<"\n";
             final_graphs.push_back(ind);
         }
     }
@@ -172,11 +174,11 @@ int main(int argc, char** argv){
         if(dummy_line=="") break;
         Graph query;
         read_graph(query,queries);
-        // cout<<"Done Reading\n";
-        vector<int> ind=query_index(query,feature_graphs,index,Dataset_size);
-        // cout<<"Got ind: "<<ind.size() <<"\n";
+        cout<<"Done Reading\n";
+        vector<int> ind = query_index(query,feature_graphs,index,Dataset_size);        
+        cout<<"Got ind: " << ind.size() <<"\n";
         ind = find_supergraphs_from_subset(ind,query,graphs);
-        // cout<<"About to Write\n";
+        cout<<"About to Write\n" << ind.size() << std::endl;
         write_to_file(ind,out);
     }
     queries.close();

@@ -30,7 +30,7 @@ struct OptionStructure
 		storeSolutions(false),
 		verbose(0),
 		format("vf"),
-		repetitionTimeLimit(1){}
+		repetitionTimeLimit(0){}
 };
 
 typedef OptionStructure Options;

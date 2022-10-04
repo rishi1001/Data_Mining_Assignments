@@ -111,7 +111,6 @@ bool check_subgraph(Options opt, std::vector<int> nodes_q, std::vector<std::tupl
 #endif
 
 	gettimeofday(&start, NULL);
-
 	ARGLoader<data_t, data_t>* pattloader = new vflib::VectorARGLoader<data_t, data_t>(nodes_q,edges_q,opt.undirected);
 	ARGLoader<data_t, data_t>* targloader = new vflib::VectorARGLoader<data_t, data_t>(nodes_g,edges_g,opt.undirected);
 
