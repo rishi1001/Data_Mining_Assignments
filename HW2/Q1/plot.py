@@ -8,15 +8,15 @@ def run_process_fsg(alg, thresh, inFile):
     command = f"./{alg} -s {thresh} {inFile}"
     print(command)
     try:
-        check_output(command, shell=True, stderr=STDOUT,timeout=3600)
+        check_output(command, shell=True, stderr=STDOUT)
     except TimeoutExpired:
         pass
 
 def run_process_gSpan(alg, thresh, inFile):
-    command = f"./{alg} -f {inFile} -s {thresh} -o -i"
+    command = f"./{alg} -f {inFile} -s {thresh}"
     print(command)
     try:
-        check_output(command, shell=True, stderr=STDOUT,timeout=3600)
+        check_output(command, shell=True, stderr=STDOUT)
     except TimeoutExpired:
         pass
 
@@ -24,7 +24,7 @@ def run_process_gaston(alg, thresh, inFile):
     command = f"./{alg} {thresh} {inFile}"
     print(command)
     try:
-        check_output(command, shell=True, stderr=STDOUT,timeout=3600)
+        check_output(command, shell=True, stderr=STDOUT)
     except TimeoutExpired:
         pass
 

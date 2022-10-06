@@ -46,5 +46,5 @@ u 0 2 1
 #   Total Number of Frequent Patterns Found:     3
 # 
 # Timing Information ------------------------------------
-#   Elapsed User CPU Time:                       2.2[sec]
+#   Elapsed User CPU Time:                       2.3[sec]
 # *******************************************************
