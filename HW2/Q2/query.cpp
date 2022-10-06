@@ -155,30 +155,60 @@ int main(int argc, char** argv){
     cout<<"Reading Index\n";
     read_index(Inverted_file_name,Feature_file_name,input_dataset_filename,graphs,feature_graphs,index);
     cout<<"Reading Index done\n";
+
+    map<string,int> hash;
+    string hashFileName = "hashing.txt";
+    ifstream hashFile(hashFileName);
+    // read hashes string:int from file
+    while(!hashFile.eof()){
+        string s;
+        int i;
+        hashFile>>s>>i;
+        hash[s]=i;
+    }
     Dataset_size=graphs.size();
     string query_file_name,output_file_name;
-    query_file_name=argv[1];
-    output_file_name=argv[2];
-    // cout<<"Enter query file name: ";
-    // cin>>query_file_name;
+    output_file_name="output_2019CS10368.txt";
+    cout<<"Enter query file name: ";
+    cin>>query_file_name;
     auto start = high_resolution_clock::now();
-    
+
     ifstream queries(query_file_name);
     int i=0;
     ofstream out(output_file_name);
+    string line;
     while(!queries.eof()){
-        cout<<"Find Indices for query "<<i<<endl;
+        getline(queries,line);         // dummy line for graph id(does query id matter?)
+        if(line=="") break;
+        cout<<"Find Indices for query "<<i<<"\n";
         i++;
-        string dummy_line;
-        getline(queries,dummy_line);
-        if(dummy_line=="") break;
         Graph query;
-        read_graph(query,queries);
+        getline(queries,line);
+        stringstream ss(line);
+        int totNodes;
+        ss>>totNodes;
+        for(int i=0;i<totNodes;i++){
+            getline(queries,line);
+            int nodeLabel = hash[line];
+            query.nodes.push_back(nodeLabel);
+        }
+        getline(queries,line);
+        stringstream ss1(line);
+        int totEdges;
+        ss1>>totEdges;
+        for(int i=0;i<totEdges;i++){
+            getline(queries,line);
+            stringstream ss2(line);
+            int u,v,label;
+            ss2>>u>>v>>label;
+            query.edges.push_back(make_tuple(u,v,label));
+        }
+        getline(queries,line);      // empty line
         cout<<"Done Reading\n";
         vector<int> ind = query_index(query,feature_graphs,index,Dataset_size);        
         cout<<"Got ind: " << ind.size() <<"\n";
         ind = find_supergraphs_from_subset(ind,query,graphs);
-        cout<<"About to Write\n" << ind.size() << std::endl;
+        cout<<"About to Write\n" << ind.size() << "\n";
         write_to_file(ind,out);
     }
     queries.close();

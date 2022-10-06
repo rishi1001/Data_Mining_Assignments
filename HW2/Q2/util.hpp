@@ -36,7 +36,7 @@ void read_graph(Graph &g, ifstream &file){
     //cout<<"hehe\n";
     while(!file.eof()){
         len=file.tellg();
-        getline(file,line);
+        getline(file,line);         // TODO store the graph id for output
         if(line=="") {
             // file.seekg(len ,std::ios_base::beg);
             break;

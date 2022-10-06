@@ -12,6 +12,7 @@ int main(int argc, char** argv){
     string fileName = argv[1];
     ifstream file(fileName);
     ofstream out("formatted.txt");
+    ofstream outHash("hashing.txt");
     string line;
     map<string,int> m;
     int hash=1;
@@ -48,8 +49,12 @@ int main(int argc, char** argv){
         }
         getline(file,line);
         // cout<<"Done 1 graph\n";
-        // break;
-
     }
+    for(auto it=m.begin();it!=m.end();it++){
+        outHash<<it->first<<" "<<it->second<<"\n";
+    }
+    file.close();
+    out.close();
+    outHash.close();
     return 0;
 }
