@@ -31,14 +31,14 @@ def run_process_gaston(alg, thresh, inFile):
 if __name__ == '__main__':
     inFile = sys.argv[1]
     outFile = sys.argv[2]
-    totGraphs = int(open('totGraphs.txt', 'r').read())
-    # min_support = [5,10,25,50,95]
-    min_support = [50,95]
+    totGraphs = int(open(sys.argv[3], 'r').read())
+    min_support = [5,10,25,50,95]
+    # min_support = [95]
 
-    algs = ['fsg', 'gSpan','gaston']
+    algs = ['Q1/fsg', 'Q1/gSpan','Q1/gaston']
     results = {alg:[3600 for x in min_support] for alg in algs}
     for i,thresh in enumerate(min_support):
-        alg = 'fsg'
+        alg = 'Q1/fsg'
         setup = f"from __main__ import run_process_fsg;alg = \"{alg}\";thresh = {thresh};inFile = \"{inFile}\""
         # print(setup)
         time_taken = timeit(
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         )
         print(alg,thresh,time_taken)
         results[alg][i]= time_taken
-        alg = 'gSpan'
+        alg = 'Q1/gSpan'
         gSpan_thresh = thresh/100
         setup = f"from __main__ import run_process_gSpan;alg = \"{alg}\";thresh = {gSpan_thresh};inFile = \"{inFile}\""
         # print(setup)
@@ -58,7 +58,8 @@ if __name__ == '__main__':
             number=1
         )
         print(alg,thresh,time_taken)
-        alg = 'gaston'
+        results[alg][i]= time_taken
+        alg = 'Q1/gaston'
         gaston_thresh = thresh*totGraphs
         setup = f"from __main__ import run_process_gaston;alg = \"{alg}\";thresh = {gaston_thresh};inFile = \"{inFile}\""
         # print(setup)
