@@ -13,13 +13,16 @@ int main(int argc, char** argv){
     ifstream file(fileName);
     ofstream out("formatted.txt");
     ofstream outHash("hashing.txt");
+    ofstream totGraphs("totGraphs.txt");
     string line;
     map<string,int> m;
     int hash=1;
     string toWrite="";
+    int tot=0;
     while(!file.eof()){
         getline(file,line);
         if(line=="") break;
+        tot+=1;
         // cout<<line<<"\n";           // get id from string
         toWrite = "t # "+line.substr(1,line.size()-1)+"\n";
         out<<toWrite;
@@ -53,6 +56,7 @@ int main(int argc, char** argv){
     for(auto it=m.begin();it!=m.end();it++){
         outHash<<it->first<<" "<<it->second<<"\n";
     }
+    totGraphs<<tot;
     file.close();
     out.close();
     outHash.close();
