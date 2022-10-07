@@ -26,7 +26,7 @@ sh query.sh
 Enter the query file location
 
 Q3) 
-
+sh elbow_plot.sh <dataset> <dimensions> <output>
 
 Team Members
 1. Rishi Shah         2019CS10394
@@ -34,6 +34,6 @@ Team Members
 3. Krishnanshu Jain   2019CS10368
 
 Contributions
-1. Prakhar Jagwani   34%
-2. Rishi Shah   33%
+1. Prakhar Jagwani   33%
+2. Rishi Shah   34%
 3. Krishnanshu Jain    33%

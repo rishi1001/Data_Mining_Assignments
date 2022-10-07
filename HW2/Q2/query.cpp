@@ -175,7 +175,7 @@ int main(int argc, char** argv){
     }
     Dataset_size=graphs.size();
     string query_file_name,output_file_name;
-    output_file_name="output_2019CS10382.txt";
+    output_file_name="output_CS1190382.txt";
     cout<<"Enter query file name: ";
     cin>>query_file_name;
     auto start = high_resolution_clock::now();
