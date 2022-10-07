@@ -11,6 +11,7 @@ using namespace std;
 struct Graph{
     vector<int> nodes;
     vector<tuple<int,int,int>> edges;
+    int g_id;
 };
 
 /**
@@ -36,7 +37,7 @@ void read_graph(Graph &g, ifstream &file){
     //cout<<"hehe\n";
     while(!file.eof()){
         len=file.tellg();
-        getline(file,line);         // TODO store the graph id for output
+        getline(file,line);
         if(line=="") {
             // file.seekg(len ,std::ios_base::beg);
             break;

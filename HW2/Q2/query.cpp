@@ -49,8 +49,15 @@ void read_index(string inverted_index_file_name, string feature_index_file_name,
         string dummy_line;              
         getline(graph_index,dummy_line);                // for the first line of t # 0
         if(dummy_line=="") break;                // done reading
+        stringstream ss(dummy_line);
+        char c;
+        ss>>c;
+        ss>>c;
+        int graph_id;
+        ss>>graph_id;
         Graph g;
         read_graph(g,graph_index);
+        g.g_id=graph_id;
         graphs.push_back(g);
     }
 }
@@ -129,7 +136,7 @@ vector<int> find_supergraphs_from_subset(vector<int> &subset, Graph &q, vector<G
     for(int ind:subset){
         if(is_subgraph(q,graphs[ind])){
             // cout<<"here : "<< ind <<"\n";
-            final_graphs.push_back(ind);
+            final_graphs.push_back(graphs[ind].g_id);            // adding the actual id
         }
     }
     return final_graphs;
@@ -214,7 +221,7 @@ int main(int argc, char** argv){
     queries.close();
     out.close();
     auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<seconds>(stop - start);
-    cout << "Total Time taken: "<< duration.count() << " seconds" << endl;
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cout << "Total Time taken: "<< duration.count() << " milli seconds" << endl;
 
 }
