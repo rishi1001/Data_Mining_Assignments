@@ -14,7 +14,7 @@ class data_point():
         self.edge_index=None
         self.edge_weight =None
         self.graph=None
-        self.train_mask=None
+        self.train_mask=None            # list of indices of train nodes
         self.val_mask=None
         self.test_mask=None
         self.generate_edge_index()

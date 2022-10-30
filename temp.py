@@ -1,8 +1,9 @@
-import torch
+import networkx as nx
+import pandas as pd
 
-temp = torch.tensor([1,2,3,4,5])
-
-
-mask = [0,1,2,4]
-
-print(temp[mask])
+df = pd.read_csv('./a3_datasets/d2_adj_mx.csv',index_col=0)
+cols=df.columns
+# df.columns=[i for i in range(len(cols))]
+print(df.head)
+print(df.shape)
+G = nx.from_pandas_adjacency(df)
