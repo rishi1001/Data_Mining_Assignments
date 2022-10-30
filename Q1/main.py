@@ -2,17 +2,28 @@ import torch
 from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
-from datasets import data_point
 import os
-from torchviz import make_dot
 from .model import GCN
-from .dataset import data_point
+from .dataset import data_point, graph
+import pandas as pd
+
+
+G=graph("../a3_datasets/temp_adj_mx.csv")
+
 
 def read_data():
     dataset=[]
-    directory='../dataset2'
-    for filename in os.listdir(directory): 
-        dataset.append(data_point(directory+'/'+filename))
+    path='../a3_datasets/temp_x.csv'
+
+    df = pd.read_csv('/content/temp_x.csv')
+    df=df.drop(['Unnamed: 0'], axis=1)
+    for i in range(len(df)-1):
+      # print("dddddddd")
+      # print(i)
+      d=df.loc[i:i+1,:]
+      d=d.reset_index(drop=True)
+      dataset.append(data_point(d,G.mapping))
+
     return dataset
 
 
