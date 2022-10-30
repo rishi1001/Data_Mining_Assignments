@@ -14,9 +14,16 @@ class data_point():
         self.edge_index=None
         self.edge_weight =None
         self.graph=None
+        self.train_mask=None
+        self.val_mask=None
+        self.test_mask=None
         self.generate_edge_index()
         self.generate_features()
         self.generate_y()
+
+    def generate_masks(self):
+        # TODO : generate masks using input files
+        pass
     
     
     def generate_edge_index(self):
