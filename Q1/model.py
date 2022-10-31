@@ -8,14 +8,18 @@ class GCN(torch.nn.Module):
     def __init__(self, hidden_channels):
         super().__init__()
         torch.manual_seed(1234567)
+        self.batch_norm0 = torch.nn.BatchNorm1d(1)
         self.conv1 = GCNConv(1, hidden_channels)            # input features = 1
+        self.batch_norm1 = torch.nn.BatchNorm1d(hidden_channels)
         self.conv2 = GCNConv(hidden_channels, 2*hidden_channels)
         # mlp
         self.lin1 = Linear(2*hidden_channels, hidden_channels)
         self.lin2 = Linear(hidden_channels, 1)
 
     def forward(self, x, edge_index,edge_weight):       # TODO add batchnorm
+        x = self.batch_norm0(x)
         x = self.conv1(x, edge_index,edge_weight)
+        x = self.batch_norm1(x)
         x = x.relu()
         # x = F.dropout(x, p=0.5, training=self.training)
         x = self.conv2(x, edge_index,edge_weight)           # node embeddings

@@ -1,4 +1,3 @@
-print("hehehe")
 import torch
 import os
 from dataset import data_point, graph
@@ -55,7 +54,7 @@ print("yahi hu me")
 
 model = GCN(hidden_channels=16)
 model=model.double()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
 criterion = torch.nn.MSELoss()          # TODO check this
 
 best_loss = -1
@@ -70,9 +69,8 @@ def train(epoch):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
     #   print(data.features.shape)
-        out = model(data.features, G.edge_index, G.edge_weight).reshape(-1)   
-    #   print(out.shape)
-        loss = criterion(out, data.y[train_node_ids])
+        out = model(data.features, G.edge_index, G.edge_weight)  
+        loss = criterion(out[train_node_ids], data.y[train_node_ids])/len(train_node_ids)
     #   make_dot(out).render("graph.dot", format="png")
     #   print(out)
         #print("dataaa y")
@@ -80,7 +78,6 @@ def train(epoch):
         #print("out", out)
         loss.backward()
         optimizer.step()
-        print(loss)
         running_loss += loss.item()
 
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
@@ -92,19 +89,14 @@ def test(test=False):         # test=True for test set
     running_loss = 0.0
     with torch.no_grad():
         for data in dataset:
-            out = model(data.features, G.edge_index, G.edge_weight).reshape(-1)
+            out = model(data.features, G.edge_index, G.edge_weight)
             if test:
-                loss = criterion(out, data.y[test_node_ids])
+                loss = criterion(out[test_node_ids], data.y[test_node_ids])/len(test_node_ids)
             else:
-                loss = criterion(out, data.y[val_node_ids])
-            loss = criterion(out, data.y)
+                loss = criterion(out[val_node_ids], data.y[val_node_ids])/len(val_node_ids)
             running_loss += loss.item()
-            #print(loss)
-            #print("dataaa y")
-            #print(data.y)
-            #print("out", out)
-            print("test loss", loss)
-            print("test acc", loss)
+        print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
+        
     
     if test==False and (best_loss==-1 or running_loss < best_loss):
         best_loss=running_loss
@@ -116,9 +108,9 @@ if __name__ == '__main__':
     print('Start Training')
     os.makedirs('./models', exist_ok=True)
 
-    num_epochs = 1
+    num_epochs = 1000
     for epoch in range(num_epochs):  # loop over the dataset multiple times
-        print('epoch ', epoch + 1)
+        # print('epoch ', epoch + 1)
         train(epoch)
         test()      # on validation set    
 
