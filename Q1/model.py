@@ -14,11 +14,11 @@ class GCN(torch.nn.Module):
         self.lin1 = Linear(2*hidden_channels, hidden_channels)
         self.lin2 = Linear(hidden_channels, 1)
 
-    def forward(self, x, edge_index):       # TODO add batchnorm
-        x = self.conv1(x, edge_index)
+    def forward(self, x, edge_index,edge_weight):       # TODO add batchnorm
+        x = self.conv1(x, edge_index,edge_weight)
         x = x.relu()
         # x = F.dropout(x, p=0.5, training=self.training)
-        x = self.conv2(x, edge_index)           # node embeddings
+        x = self.conv2(x, edge_index,edge_weight)           # node embeddings
 
         x = x.relu()
         #mlp

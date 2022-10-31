@@ -1,14 +1,14 @@
 print("hehehe")
 import torch
 import os
-# from dataset import data_point, graph
+from dataset import data_point, graph
 from model import GCN
 import pandas as pd
 import numpy as np
 
 G=graph("../a3_datasets/d2_adj_mx.csv")
-print(G.edge_list)
-print(G.edge_weight)
+print(G.edge_index)
+print(G.edge_weight.shape)
 
 
 def read_data():
@@ -17,9 +17,9 @@ def read_data():
 
   df = pd.read_csv(path)
   df=df.drop(['Unnamed: 0'], axis=1)
-  for i in range(len(df)-1):
+  for i in range(100):
     # print("dddddddd")
-    # print(i)
+    print(i)
     d=df.loc[i:i+1,:]
     d=d.reset_index(drop=True)
     dataset.append(data_point(d,G.mapping))
@@ -39,6 +39,8 @@ splits = np.load("../a3_datasets/d2_graph_splits.npz")
 train_node_ids = convert(splits["train_node_ids"],G.mapping) 
 val_node_ids = convert(splits["val_node_ids"],G.mapping) 
 test_node_ids = convert(splits["test_node_ids"],G.mapping)
+
+print("yahi hu me")
 
 # TODO generate train,val,test set
 
