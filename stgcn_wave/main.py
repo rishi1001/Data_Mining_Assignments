@@ -78,17 +78,23 @@ device = (
     else torch.device("cpu")
 )
 
-with open(args.sensorsfilepath) as f:
-    sensor_ids = f.read().strip().split(",")
+# with open(args.sensorsfilepath) as f:
+#     sensor_ids = f.read().strip().split(",")
 
-distance_df = pd.read_csv(args.disfilepath, dtype={"from": "str", "to": "str"})
+# distance_df = pd.read_csv(args.disfilepath, dtype={"from": "str", "to": "str"})
 
-adj_mx = get_adjacency_matrix(distance_df, sensor_ids)
-sp_mx = sp.coo_matrix(adj_mx)
+# adj_mx = get_adjacency_matrix(distance_df, sensor_ids)
+# sp_mx = sp.coo_matrix(adj_mx)
+df = pd.read_csv('../a3_datasets/d1_adj_mx.csv',index_col=0)
+cols=df.columns
+df.columns=[i for i in range(len(cols))]
+df=df.reset_index(drop=True)
+sp_mx = sp.coo_matrix(df)
 G = dgl.from_scipy(sp_mx)
 
 
-df = pd.read_hdf(args.tsfilepath)
+df = pd.read_csv('../a3_datasets/d1_X.csv')           # our dataset has csv files
+df=df.drop(['Unnamed: 0'], axis=1)
 num_samples, num_nodes = df.shape
 
 tsdata = df.to_numpy()
@@ -111,7 +117,7 @@ epochs = args.epochs
 lr = args.lr
 
 
-W = adj_mx
+# W = adj_mx
 len_val = round(num_samples * 0.1)
 len_train = round(num_samples * 0.7)
 train = df[:len_train]
@@ -150,9 +156,11 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.7)
 
 min_val_loss = np.inf
 for epoch in range(1, epochs + 1):
+    print(epoch)
     l_sum, n = 0.0, 0
     model.train()
     for x, y in train_iter:
+        print("here")
         y_pred = model(x).view(len(x), -1)
         l = loss(y_pred, y)
         optimizer.zero_grad()
