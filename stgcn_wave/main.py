@@ -85,20 +85,21 @@ device = (
 
 # adj_mx = get_adjacency_matrix(distance_df, sensor_ids)
 # sp_mx = sp.coo_matrix(adj_mx)
-df = pd.read_csv('../a3_datasets/d1_adj_mx.csv',index_col=0)
+df = pd.read_csv('../a3_datasets/temp_adj_mx.csv',index_col=0)
 cols=df.columns
 df.columns=[i for i in range(len(cols))]
 df=df.reset_index(drop=True)
 sp_mx = sp.coo_matrix(df)
 G = dgl.from_scipy(sp_mx)
+G = dgl.add_self_loop(G)
 
-
-df = pd.read_csv('../a3_datasets/d1_X.csv')           # our dataset has csv files
+df = pd.read_csv('../a3_datasets/temp_x.csv')           # our dataset has csv files
 df=df.drop(['Unnamed: 0'], axis=1)
 num_samples, num_nodes = df.shape
-
+# print(df)
+# print(df.shape)
 tsdata = df.to_numpy()
-
+# exit(0)
 
 n_his = args.window
 
@@ -120,6 +121,8 @@ lr = args.lr
 # W = adj_mx
 len_val = round(num_samples * 0.1)
 len_train = round(num_samples * 0.7)
+# print(len_train)
+# print(len_val)
 train = df[:len_train]
 val = df[len_train : len_train + len_val]
 test = df[len_train + len_val :]
@@ -128,15 +131,16 @@ scaler = StandardScaler()
 train = scaler.fit_transform(train)
 val = scaler.transform(val)
 test = scaler.transform(test)
-
-
+# print(train)
+# print(n_his,n_pred)
 x_train, y_train = data_transform(train, n_his, n_pred, device)
 x_val, y_val = data_transform(val, n_his, n_pred, device)
 x_test, y_test = data_transform(test, n_his, n_pred, device)
 
-print(x_train.shape,y_train.shape)
+print(x_train.shape,y_train.shape,'ssssss')
 train_data = torch.utils.data.TensorDataset(x_train, y_train)
-print(train_data)
+
+batch_size=1
 print(batch_size)
 train_iter = torch.utils.data.DataLoader(train_data, batch_size, shuffle=True)
 val_data = torch.utils.data.TensorDataset(x_val, y_val)
@@ -161,7 +165,9 @@ for epoch in range(1, epochs + 1):
     model.train()
     for x, y in train_iter:
         print("here")
+        print(x.shape)
         y_pred = model(x).view(len(x), -1)
+        exit(0)
         l = loss(y_pred, y)
         optimizer.zero_grad()
         l.backward()
@@ -181,7 +187,6 @@ for epoch in range(1, epochs + 1):
         ", validation loss:",
         val_loss,
     )
-
 
 best_model = STGCN_WAVE(
     blocks, n_his, n_route, G, drop_prob, num_layers, device, args.control_str

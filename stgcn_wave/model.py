@@ -26,8 +26,9 @@ class TemporalConvLayer(nn.Module):
         super(TemporalConvLayer, self).__init__()
         self.c_out = c_out
         self.c_in = c_in
+        ## TODO
         self.conv = nn.Conv2d(
-            c_in, c_out, (2, 1), 1, dilation=dia, padding=(0, 0)
+            c_in, c_out, (2,1), 1, dilation=dia, padding=(0, 0)
         )
 
     def forward(self, x):
@@ -77,7 +78,13 @@ class OutputLayer(nn.Module):
         x_t2 = self.tconv2(x_ln)
         return self.fc(x_t2)
 
-
+'''
+c -> blocks
+T-> his
+n-> num_nodes
+Lk-> graph
+p-> drop 
+'''
 class STGCN_WAVE(nn.Module):
     def __init__(
         self, c, T, n, Lk, p, num_layers, device, control_str="TNTSTNTST"
@@ -99,16 +106,24 @@ class STGCN_WAVE(nn.Module):
             if i_layer == "S":  # Spatio Layer
                 self.layers.append(SpatioConvLayer(c[cnt], Lk))
             if i_layer == "N":  # Norm Layer
+                # print(n,c[cnt],'dddd')
                 self.layers.append(nn.LayerNorm([n, c[cnt]]))
-        self.output = OutputLayer(c[cnt], T + 1 - 2 ** (diapower), n)
+        print(T,diapower,T + 1 - 2 ** (diapower))
+        self.output = OutputLayer(c[cnt], max(T + 1 - 2 ** (diapower),1), n)
         for layer in self.layers:
             layer = layer.to(device)
 
     def forward(self, x):
+        print(self.control_str)
         for i in range(self.num_layers):
             i_layer = self.control_str[i]
+            print(i_layer)
+            print("input ",x.shape)
             if i_layer == "N":
+                # print(x)
                 x = self.layers[i](x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
             else:
+                # print(i_layer)
                 x = self.layers[i](x)
+            print(x.shape)
         return self.output(x)

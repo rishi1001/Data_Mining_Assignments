@@ -11,7 +11,8 @@ def evaluate_model(model, loss, data_iter):
             l = loss(y_pred, y)
             l_sum += l.item() * y.shape[0]
             n += y.shape[0]
-        return l_sum / n
+        print(l_sum,n)
+        return l_sum / n + 1e9
 
 
 def evaluate_metric(model, data_iter, scaler):

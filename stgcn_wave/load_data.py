@@ -16,6 +16,7 @@ def data_transform(data, n_his, n_pred, device):
     n_route = data.shape[1]
     l = len(data)
     num = l - n_his - n_pred
+    # print(num,l,n_his,n_pred,n_route)
     x = np.zeros([num, 1, n_his, n_route])
     y = np.zeros([num, n_route])
 
