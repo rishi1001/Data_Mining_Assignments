@@ -12,26 +12,42 @@ print(G.edge_weight.shape)
 
 
 def read_data():
-  dataset=[]
-  path='../a3_datasets/d2_X.csv'
+    dataset=[]
+    path='../a3_datasets/temp_x.csv'
 
-  df = pd.read_csv(path)
-  df=df.drop(['Unnamed: 0'], axis=1)
-#   for i in range(len(df)-1):  # TODO : change this 
-#     # print("dddddddd")
-#     print(i)
-#     d=df.loc[i:i+1,:]
-#     d=d.reset_index(drop=True)
-#     dataset.append(data_point(d,G.mapping))
-   
-  
+    df = pd.read_csv(path)
+    df=df.drop(['Unnamed: 0'], axis=1)
+    df=np.array(df.values)
+    print(df)
+    n_his=1
+    n_pred=1
+    n_route=df.shape[1]
+    print(df)
+    num=len(df)-n_his-n_pred+1
+    x = np.zeros([num, n_his, n_route,1])
+    # print(num,l,n_his,n_pred,n_route)
+    y = np.zeros([num, n_route])
+
+    cnt = 0
+    for i in range(num):
+        head = i
+        tail = i + n_his
+        # print(df[head:tail].shape)
+        #print(df[head:tail])
+        x[cnt, :, :, :] = df[head:tail].reshape(n_his, n_route,1)
+        y[cnt] = df[tail + n_pred - 1]
+        #print(y[cnt])
+        cnt += 1
+    return torch.Tensor(x), torch.Tensor(y)
+X,Y=read_data()
+
   
 
 # TODO masking for train and test while training & loss function
 # TODO add code for validation
 def convert(l,mapping):
-  m = {mapping[i]:i for i in range(len(mapping))}
-  return [m[str(i)] for i in l]  
+    m = {mapping[i]:i for i in range(len(mapping))}
+    return [m[str(i)] for i in l]  
 
 
 dataset = read_data()

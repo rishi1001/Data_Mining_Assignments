@@ -17,6 +17,7 @@ def read_data():
 
   df = pd.read_csv(path)
   df=df.drop(['Unnamed: 0'], axis=1)
+   
 #   for i in range(len(df)-1):  # TODO : change this 
 #     # print("dddddddd")
 #     print(i)
