@@ -6,14 +6,14 @@ import pandas as pd
 import numpy as np
 from utils import *
 
-G=graph("../a3_datasets/temp_adj_mx.csv")
+G=graph("../a3_datasets/d1_adj_mx.csv")
 print(G.edge_index)
 print(G.edge_weight.shape)
 
 
 def read_data():
     dataset=[]
-    path='../a3_datasets/temp_x.csv'
+    path='../a3_datasets/d1_X.csv'
 
     df = pd.read_csv(path)
     df=df.drop(['Unnamed: 0'], axis=1)
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
 
-    num_epochs = 1000
+    num_epochs = 10
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         # print('epoch ', epoch + 1)
         train(epoch)
