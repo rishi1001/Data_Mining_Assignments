@@ -4,6 +4,7 @@ from dataset import data_point, graph
 from model import GCN
 import pandas as pd
 import numpy as np
+from utils import *
 
 G=graph("../a3_datasets/d2_adj_mx.csv")
 print(G.edge_index)
@@ -47,15 +48,13 @@ train_node_ids = convert(splits["train_node_ids"],G.mapping)
 val_node_ids = convert(splits["val_node_ids"],G.mapping) 
 test_node_ids = convert(splits["test_node_ids"],G.mapping)
 
-print("yahi hu me")
-
-# TODO generate train,val,test set
+# TODO ask if we can use featuers of test nodes also while training?
 
 
 model = GCN(hidden_channels=16)
 model=model.double()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
-criterion = torch.nn.MSELoss()          # TODO check this
+criterion = torch.nn.MSELoss()
 
 best_loss = -1
 bestmodel = None
@@ -108,6 +107,9 @@ if __name__ == '__main__':
     print('Start Training')
     os.makedirs('./models', exist_ok=True)
 
+    # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
+
+
     num_epochs = 1000
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         # print('epoch ', epoch + 1)
@@ -117,6 +119,11 @@ if __name__ == '__main__':
     print('performing test')
     test(test=True)
     print('Finished Training')
+
+    MAE, MAPE, RMSE = evaluate_metric(bestmodel, dataset, G)
+    print("MAE: ", MAE)
+
+    # TODO use the plotting function from utils.py
 
     # Saving our trained model
     torch.save(model.state_dict(), './models/lastmodel.pth')

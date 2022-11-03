@@ -13,10 +13,10 @@ def load_data(file_path, len_train, len_val):
 
 def data_transform(data, n_his, n_pred, device):
     # produce data slices for training and testing
-    n_route = data.shape[1]
+    n_route = data.shape[1]             # number of nodes
     l = len(data)
-    num = l - n_his - n_pred
-    x = np.zeros([num, 1, n_his, n_route])
+    num = l - n_his - n_pred                # total data points for which we have both his,pred
+    x = np.zeros([num, 1, n_his, n_route])      
     y = np.zeros([num, n_route])
 
     cnt = 0
