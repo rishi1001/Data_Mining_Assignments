@@ -6,14 +6,14 @@ import pandas as pd
 import numpy as np
 from utils import *
 
-G=graph("../a3_datasets/d2_adj_mx.csv")
+G=graph("../a3_datasets/d1_adj_mx.csv")
 print(G.edge_index)
 print(G.edge_weight.shape)
 
 
 def read_data():
   dataset=[]
-  path='../a3_datasets/d2_X.csv'
+  path='../a3_datasets/d1_X.csv'
 
   df = pd.read_csv(path)
   df=df.drop(['Unnamed: 0'], axis=1)
@@ -25,7 +25,7 @@ def read_data():
 #     d=d.reset_index(drop=True)
 #     dataset.append(data_point(d,G.mapping))
 
-  for i in range(2):  # TODO : CCHECk this 
+  for i in range(50):  # TODO : CCHECk this 
     # print("dddddddd")
     print(i)
     d=df.loc[i:i+1,:]
@@ -44,7 +44,7 @@ def convert(l,mapping):
 
 
 dataset = read_data()
-splits = np.load("../a3_datasets/d2_graph_splits.npz") 
+splits = np.load("../a3_datasets/d1_graph_splits.npz") 
 train_node_ids = convert(splits["train_node_ids"],G.mapping) 
 val_node_ids = convert(splits["val_node_ids"],G.mapping) 
 test_node_ids = convert(splits["test_node_ids"],G.mapping)
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
 
 
-    num_epochs = 1000
+    num_epochs = 100
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         # print('epoch ', epoch + 1)
         train(epoch)

@@ -40,12 +40,12 @@ class data_point():
         self.num_features=1
         # TODO check do wee nedd [3] or [3,1]
         l=[[data.iloc[0][mapping[i]]] for i in range(len(mapping))]
-        self.features=torch.tensor(l)
+        self.features=torch.tensor(l).double()
 
     def generate_y(self,data,mapping):
         # TODO check do wee nedd [3] or [3,1]
         l=[[data.iloc[1][mapping[i]]] for i in range(len(mapping))]
-        self.y=torch.tensor(l)
+        self.y=torch.tensor(l).double()
         
         
     
