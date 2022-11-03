@@ -12,6 +12,7 @@ class graph():
         self.edge_index=None
         self.edge_weight=None
         self.mapping=None    ## index to node_id
+        self.num_nodes=None
         self.read_graph(path)
 
     def read_graph(self,path):
@@ -21,6 +22,7 @@ class graph():
         df=df.reset_index(drop=True)
         
         t=torch.tensor(df.values)
+        self.num_nodes = t.shape[0]
         self.edge_index , self.edge_weight = dense_to_sparse(t)
         self.edge_weight=self.edge_weight
         #self.mapping ={i:cols[i] for i in range(len(cols))}                    

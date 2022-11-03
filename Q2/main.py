@@ -59,7 +59,7 @@ test_node_ids = convert(splits["test_node_ids"],G.mapping)
 # TODO ask if we can use featuers of test nodes also while training?
 
 
-model = STConv(hidden_channels=16)
+model = STConv(num_nodes=G.num_nodes, in_channels=1, hidden_channels=1, out_channels=1, kernel_size=1, K=2)
 model=model.double()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
 criterion = torch.nn.MSELoss()
