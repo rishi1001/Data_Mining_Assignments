@@ -21,17 +21,18 @@ def evaluate_metric_scaler(model, data_iter, scaler):
         return MAE, MAPE, RMSE
 
 
-def evaluate_metric(model, dataset, G):
+def evaluate_metric(model, X,Y, G):
     model.eval()
     with torch.no_grad():
         mae, mape, mse = [], [], []
-        for data in dataset:
-            y = data.y
-            y_pred = model(data.features, G.edge_index, G.edge_weight)
-            d = np.abs(y - y_pred)
-            mae += d.tolist()
-            mape += (d / y).tolist()
-            mse += (d**2).tolist()
+        y_pred = model(X, G.edge_index, G.edge_weight).view(len(X), -1)
+        print(y_pred)
+        print(Y)
+        print(y_pred.shape,Y.shape)
+        d = np.abs(Y - y_pred)
+        mae += d.tolist()
+        mape += (d / Y).tolist()
+        mse += (d**2).tolist()
         MAE = np.array(mae).mean()
         MAPE = np.array(mape).mean()
         RMSE = np.sqrt(np.array(mse).mean())

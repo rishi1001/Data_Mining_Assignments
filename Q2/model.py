@@ -24,24 +24,24 @@ class TemporalConv(nn.Module):
         self.conv_2 = nn.Conv2d(in_channels, out_channels, (1, kernel_size))
         self.conv_3 = nn.Conv2d(in_channels, out_channels, (1, kernel_size))
 
-def forward(self, X: torch.FloatTensor) -> torch.FloatTensor:
-        """Forward pass through temporal convolution block.
+    def forward(self, X: torch.FloatTensor) -> torch.FloatTensor:
+            """Forward pass through temporal convolution block.
 
-        Arg types:
-            * **X** (torch.FloatTensor) -  Input data of shape
-                (batch_size, input_time_steps, num_nodes, in_channels).
+            Arg types:
+                * **X** (torch.FloatTensor) -  Input data of shape
+                    (batch_size, input_time_steps, num_nodes, in_channels).
 
-        Return types:
-            * **H** (torch.FloatTensor) - Output data of shape
-                (batch_size, in_channels, num_nodes, input_time_steps).
-        """
-        X = X.permute(0, 3, 2, 1)
-        P = self.conv_1(X)
-        Q = torch.sigmoid(self.conv_2(X))
-        PQ = P * Q
-        H = F.relu(PQ + self.conv_3(X))
-        H = H.permute(0, 3, 2, 1)
-        return H
+            Return types:
+                * **H** (torch.FloatTensor) - Output data of shape
+                    (batch_size, in_channels, num_nodes, input_time_steps).
+            """
+            X = X.permute(0, 3, 2, 1)
+            P = self.conv_1(X)
+            Q = torch.sigmoid(self.conv_2(X))
+            PQ = P * Q
+            H = F.relu(PQ + self.conv_3(X))
+            H = H.permute(0, 3, 2, 1)
+            return H
 
 
 
@@ -129,33 +129,33 @@ class STConv(nn.Module):
 
         self._batch_norm = nn.BatchNorm2d(num_nodes)
 
-def forward(
-        self,
-        X: torch.FloatTensor,
-        edge_index: torch.LongTensor,
-        edge_weight: torch.FloatTensor = None,
-    ) -> torch.FloatTensor:
+    def forward(
+            self,
+            X: torch.FloatTensor,
+            edge_index: torch.LongTensor,
+            edge_weight: torch.FloatTensor = None,
+        ) -> torch.FloatTensor:
 
-        r"""Forward pass. If edge weights are not present the forward pass
-        defaults to an unweighted graph.
+            r"""Forward pass. If edge weights are not present the forward pass
+            defaults to an unweighted graph.
 
-        Arg types:
-            * **X** (PyTorch FloatTensor) - Sequence of node features of shape (Batch size X Input time steps X Num nodes X In channels).
-            * **edge_index** (PyTorch LongTensor) - Graph edge indices.
-            * **edge_weight** (PyTorch LongTensor, optional)- Edge weight vector.
+            Arg types:
+                * **X** (PyTorch FloatTensor) - Sequence of node features of shape (Batch size X Input time steps X Num nodes X In channels).
+                * **edge_index** (PyTorch LongTensor) - Graph edge indices.
+                * **edge_weight** (PyTorch LongTensor, optional)- Edge weight vector.
 
-        Return types:
-            * **T** (PyTorch FloatTensor) - Sequence of node features.
-        """
-        T_0 = self._temporal_conv1(X)
-        T = torch.zeros_like(T_0).to(T_0.device)
-        for b in range(T_0.size(0)):
-            for t in range(T_0.size(1)):
-                T[b][t] = self._graph_conv(T_0[b][t], edge_index, edge_weight)
+            Return types:
+                * **T** (PyTorch FloatTensor) - Sequence of node features.
+            """
+            T_0 = self._temporal_conv1(X)
+            T = torch.zeros_like(T_0).to(T_0.device)
+            for b in range(T_0.size(0)):
+                for t in range(T_0.size(1)):
+                    T[b][t] = self._graph_conv(T_0[b][t], edge_index, edge_weight)
 
-        T = F.relu(T)
-        T = self._temporal_conv2(T)
-        T = T.permute(0, 2, 1, 3)
-        T = self._batch_norm(T)
-        T = T.permute(0, 2, 1, 3)
-        return T
+            T = F.relu(T)
+            T = self._temporal_conv2(T)
+            T = T.permute(0, 2, 1, 3)
+            T = self._batch_norm(T)
+            T = T.permute(0, 2, 1, 3)
+            return T

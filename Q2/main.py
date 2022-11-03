@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from utils import *
 
-G=graph("../a3_datasets/d2_adj_mx.csv")
+G=graph("../a3_datasets/temp_adj_mx.csv")
 print(G.edge_index)
 print(G.edge_weight.shape)
 
@@ -38,8 +38,8 @@ def read_data():
         y[cnt] = df[tail + n_pred - 1]
         #print(y[cnt])
         cnt += 1
-    return torch.Tensor(x), torch.Tensor(y)
-X,Y=read_data()
+    return torch.from_numpy(x).double(), torch.from_numpy(y).double()
+# X,Y=read_data()
 
   
 
@@ -50,18 +50,18 @@ def convert(l,mapping):
     return [m[str(i)] for i in l]  
 
 
-dataset = read_data()
+X,Y = read_data()
 splits = np.load("../a3_datasets/d2_graph_splits.npz") 
-train_node_ids = convert(splits["train_node_ids"],G.mapping) 
-val_node_ids = convert(splits["val_node_ids"],G.mapping) 
-test_node_ids = convert(splits["test_node_ids"],G.mapping)
+# train_node_ids = convert(splits["train_node_ids"],G.mapping) 
+# val_node_ids = convert(splits["val_node_ids"],G.mapping) 
+# test_node_ids = convert(splits["test_node_ids"],G.mapping)
 
 # TODO ask if we can use featuers of test nodes also while training?
 
 
 model = STConv(num_nodes=G.num_nodes, in_channels=1, hidden_channels=1, out_channels=1, kernel_size=1, K=2)
 model=model.double()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.1, weight_decay=5e-4)
 criterion = torch.nn.MSELoss()
 
 best_loss = -1
@@ -71,23 +71,21 @@ def train(epoch):
     model.train()
 
     running_loss = 0.0
-    # batch wise training
-    for data in dataset:
-        optimizer.zero_grad()  # Clear gradients.
-        #print(data.features)
-    #   print(data.features.shape)
-        out = model(data.features, G.edge_index, G.edge_weight)  
-        loss = criterion(out[train_node_ids], data.y[train_node_ids])/len(train_node_ids)
-    #   make_dot(out).render("graph.dot", format="png")
-    #   print(out)
-        #print("dataaa y")
-        #print(data.y)
-        #print("out", out)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
+    optimizer.zero_grad()  # Clear gradients.
+    #print(data.features)
+#   print(data.features.shape)
+    out = model(X, G.edge_index, G.edge_weight).view(len(X), -1) 
+    loss = criterion(out,Y)
+#   make_dot(out).render("graph.dot", format="png")
+#   print(out)
+    #print("dataaa y")
+    #print(data.y)
+    #print("out", out)
+    loss.backward()
+    optimizer.step()
+    running_loss += loss.item()
 
-    print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
+    print('epoch %d training loss: %.3f' % (epoch + 1, running_loss))
 
 def test(test=False):         # test=True for test set
     model.eval()
@@ -95,14 +93,13 @@ def test(test=False):         # test=True for test set
     global bestmodel
     running_loss = 0.0
     with torch.no_grad():
-        for data in dataset:
-            out = model(data.features, G.edge_index, G.edge_weight)
-            if test:
-                loss = criterion(out[test_node_ids], data.y[test_node_ids])/len(test_node_ids)
-            else:
-                loss = criterion(out[val_node_ids], data.y[val_node_ids])/len(val_node_ids)
+        out = model(X, G.edge_index, G.edge_weight).view(len(X), -1)
+        if test:
+            loss = criterion(out, Y)
+        else:
+            loss = criterion(out, Y)
             running_loss += loss.item()
-        print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
+        print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss ))
         
     
     if test==False and (best_loss==-1 or running_loss < best_loss):
@@ -117,7 +114,6 @@ if __name__ == '__main__':
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
 
-
     num_epochs = 1000
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         # print('epoch ', epoch + 1)
@@ -128,7 +124,7 @@ if __name__ == '__main__':
     test(test=True)
     print('Finished Training')
 
-    MAE, MAPE, RMSE = evaluate_metric(bestmodel, dataset, G)
+    MAE, MAPE, RMSE = evaluate_metric(bestmodel,X,Y, G)
     print("MAE: ", MAE)
 
     # TODO use the plotting function from utils.py
