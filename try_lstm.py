@@ -98,4 +98,4 @@ def training_loop(n_epochs):
         loss_print = criterion(out, train_target)
         print("Step: {}, Loss: {}".format(i, loss_print))
 
-training_loop(n_epochs = 2)
+training_loop(n_epochs = 8)

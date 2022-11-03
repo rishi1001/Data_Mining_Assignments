@@ -13,7 +13,7 @@ def load_data(file_path, len_train, len_val):
 
 def data_transform(data, n_his, n_pred, device):
     # produce data slices for training and testing
-    n_route = data.shape[1]
+    n_route = data.shape[1]             # number of nodes
     l = len(data)
     num = l - n_his - n_pred
     # print(num,l,n_his,n_pred,n_route)

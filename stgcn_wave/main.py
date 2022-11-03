@@ -95,9 +95,8 @@ G = dgl.add_self_loop(G)
 
 df = pd.read_csv('../a3_datasets/temp_x.csv')           # our dataset has csv files
 df=df.drop(['Unnamed: 0'], axis=1)
-num_samples, num_nodes = df.shape
-# print(df)
-# print(df.shape)
+num_samples, num_nodes = df.shape               # num_samples = total timestamps where data is given, num_nodes = total number of nodes ( 16*5 for temp)
+
 tsdata = df.to_numpy()
 # exit(0)
 
@@ -106,7 +105,7 @@ n_his = args.window
 save_path = args.savemodelpath
 
 
-n_pred = args.pred_len
+n_pred = args.pred_len              # number of timestamps to predict
 n_route = num_nodes
 blocks = args.channels
 # blocks = [1, 16, 32, 64, 32, 128]
@@ -119,7 +118,7 @@ lr = args.lr
 
 
 # W = adj_mx
-len_val = round(num_samples * 0.1)
+len_val = round(num_samples * 0.1)              # breaking on timestamps
 len_train = round(num_samples * 0.7)
 # print(len_train)
 # print(len_val)

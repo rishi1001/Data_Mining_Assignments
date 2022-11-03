@@ -28,7 +28,7 @@ class TemporalConvLayer(nn.Module):
         self.c_in = c_in
         ## TODO
         self.conv = nn.Conv2d(
-            c_in, c_out, (2,1), 1, dilation=dia, padding=(0, 0)
+            c_in, c_out, (2, 1), 1, dilation=dia, padding=(0, 0)            # (2,1) is the kernal , so vertical is the time series
         )
 
     def forward(self, x):
