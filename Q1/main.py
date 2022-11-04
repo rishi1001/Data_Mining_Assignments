@@ -25,13 +25,18 @@ def read_data():
 #     d=d.reset_index(drop=True)
 #     dataset.append(data_point(d,G.mapping))
 
-  for i in range(50):  # TODO : CCHECk this 
-    # print("dddddddd")
-    print(i)
-    d=df.loc[i:i+1,:]
-    d=d.reset_index(drop=True)
-    dataset.append(data_point(d,G.mapping))
+  i = np.arange(df.shape[0]-1)
+  i_1 = i+1
+  pairs = np.array([i,i_1]).T.ravel()
+  dataset = df.loc[pairs,G.mapping].to_numpy().reshape(df.shape[0]-1, 2, len(G.mapping))
+  print(dataset.shape)
 
+#   for i in range(50):  # TODO : CCHECk this 
+#     # print("dddddddd")
+#     # print(i)
+#     d=df.loc[i:i+1,:]
+#     d=d.reset_index(drop=True)
+#     dataset.append(data_point(d,G.mapping))
 
   return dataset
 
