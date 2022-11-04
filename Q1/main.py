@@ -28,17 +28,17 @@ def read_data():
   i = np.arange(df.shape[0]-1)
   i_1 = i+1
   pairs = np.array([i,i_1]).T.ravel()
-  dataset = df.loc[pairs,G.mapping].to_numpy().reshape(df.shape[0]-1, 2, len(G.mapping))
-  print(dataset.shape)
-
+  dataset = df.loc[pairs,G.mapping].to_numpy().reshape(df.shape[0]-1, 2, len(G.mapping),1)
+  
+  
 #   for i in range(50):  # TODO : CCHECk this 
 #     # print("dddddddd")
 #     # print(i)
 #     d=df.loc[i:i+1,:]
 #     d=d.reset_index(drop=True)
 #     dataset.append(data_point(d,G.mapping))
-
-  return dataset
+  
+  return torch.tensor(dataset).double()
 
 
 # TODO masking for train and test while training & loss function
@@ -73,9 +73,8 @@ def train(epoch):
     for data in dataset:
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
-    #   print(data.features.shape)
-        out = model(data.features, G.edge_index, G.edge_weight)  
-        loss = criterion(out[train_node_ids], data.y[train_node_ids])/len(train_node_ids)
+        out = model(data[0], G.edge_index, G.edge_weight)  
+        loss = criterion(out[train_node_ids], data[1][train_node_ids])/len(train_node_ids)
     #   make_dot(out).render("graph.dot", format="png")
     #   print(out)
         #print("dataaa y")
@@ -94,11 +93,11 @@ def test(test=False):         # test=True for test set
     running_loss = 0.0
     with torch.no_grad():
         for data in dataset:
-            out = model(data.features, G.edge_index, G.edge_weight)
+            out = model(data[0], G.edge_index, G.edge_weight)
             if test:
-                loss = criterion(out[test_node_ids], data.y[test_node_ids])/len(test_node_ids)
+                loss = criterion(out[test_node_ids], data[1][test_node_ids])/len(test_node_ids)
             else:
-                loss = criterion(out[val_node_ids], data.y[val_node_ids])/len(val_node_ids)
+                loss = criterion(out[val_node_ids], data[1][val_node_ids])/len(val_node_ids)
             running_loss += loss.item()
         print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
         
