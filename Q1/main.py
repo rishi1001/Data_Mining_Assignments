@@ -106,7 +106,7 @@ if __name__ == '__main__':
     test(test=True)
     print('Finished Training')
 
-    MAE, MAPE, RMSE = evaluate_metric(bestmodel, dataset, G)
+    MAE, MAPE, RMSE = evaluate_metric(bestmodel, dataset)
     print("MAE: ", MAE)
 
     # TODO use the plotting function from utils.py
