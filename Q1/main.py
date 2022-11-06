@@ -8,7 +8,7 @@ from utils import *
 from torch.utils.data import DataLoader
 
 
-G=graph("../a3_datasets/temp_adj_mx.csv")
+G=graph("../a3_datasets/d2_adj_mx.csv")
 print(G.edge_index)
 print(G.edge_weight.shape)
 
@@ -19,11 +19,10 @@ def convert(l,mapping):
   return [m[str(i)] for i in l]  
 
 
-dataset=TimeSeries("../a3_datasets/temp_X.csv",G.mapping)
-# plot_y(dataset)
-# plot_graph(G)
-
-splits = np.load("../a3_datasets/d1_graph_splits.npz") 
+dataset=TimeSeries("../a3_datasets/d2_X.csv",G.mapping)
+# print(dataset[0])
+# exit(0)
+splits = np.load("../a3_datasets/d2_graph_splits.npz") 
 train_node_ids = convert(splits["train_node_ids"],G.mapping) 
 print(len(train_node_ids))
 val_node_ids = convert(splits["val_node_ids"],G.mapping) 
@@ -36,7 +35,7 @@ print(len(test_node_ids))
 # # TODO ask if we can use featuers of test nodes also while training?
 
 
-dataloader = DataLoader(dataset, batch_size=4,shuffle=True, num_workers=0)
+dataloader = DataLoader(dataset, batch_size=1,shuffle=True, num_workers=0)
 
 model = GCN(hidden_channels=16)
 model=model.double()
@@ -46,17 +45,27 @@ criterion = torch.nn.MSELoss()
 best_loss = -1
 bestmodel = None
 
+# for i,data in enumerate(dataloader):
+#     print(i)
+#     print(data['x'].shape)
+#     print(data['x'])
+#     print(X)
+#     exit(0)
+# exit(0)
+
 def train(epoch):
     model.train()
 
     running_loss = 0.0
     # batch wise training
-    for i,data in enumerate(dataset):
-        # print(i)
+    for i,data in enumerate(dataloader):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
-        out = model(data['x'], G.edge_index, G.edge_weight)  
-        loss = criterion(out[train_node_ids], data['y'][train_node_ids])/len(train_node_ids)
+        ss=data['x'].shape[1]
+        X=data['x'].reshape(ss,1)
+        Y=data['y'].reshape(ss,1)
+        out = model(X, G.edge_index,G.edge_weight)  
+        loss = criterion(out[train_node_ids], Y[train_node_ids])/len(train_node_ids)
 
         loss.backward()
         optimizer.step()
@@ -72,12 +81,15 @@ def test(test=False):         # test=True for test set
     global bestmodel
     running_loss = 0.0
     with torch.no_grad():
-        for data in dataset:
-            out = model(data['x'], G.edge_index, G.edge_weight)
+        for data in dataloader:
+            ss=data['x'].shape[1]
+            X=data['x'].reshape(ss,1)
+            Y=data['y'].reshape(ss,1)
+            out = model(X, G.edge_index, G.edge_weight)
             if test:
-                loss = criterion(out[test_node_ids], data['y'][test_node_ids])/len(test_node_ids)
+                loss = criterion(out[test_node_ids], Y[test_node_ids])/len(test_node_ids)
             else:
-                loss = criterion(out[val_node_ids], data['y'][val_node_ids])/len(val_node_ids)
+                loss = criterion(out[val_node_ids], Y[val_node_ids])/len(val_node_ids)
             running_loss += loss.item()
         print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
         

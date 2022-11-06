@@ -17,7 +17,10 @@ class GCN(torch.nn.Module):
         self.lin2 = Linear(hidden_channels, 1)
 
     def forward(self, x, edge_index,edge_weight):       # TODO add batchnorm
+        # print(x.shape)
+        # print(x)
         x = self.batch_norm0(x)
+        # print(x)
         x = self.conv1(x, edge_index,edge_weight)
         x = self.batch_norm1(x)
         x = x.relu()
