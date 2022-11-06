@@ -24,18 +24,22 @@ def evaluate_metric_scaler(model, data_iter, scaler):
 def evaluate_metric(model, dataset, G):
     model.eval()
     with torch.no_grad():
-        mae, mape, mse = [], [], []
+        mae, mape, mse, mae2 = [], [], [], []
         for data in dataset:
             y = data['y']
             y_pred = model(data['x'], G.edge_index, G.edge_weight)
+            x = data['x']
             d = np.abs(y - y_pred)
+            d2 = np.abs(x - y)
             mae += d.tolist()
+            mae2 += d2.tolist()
             mape += (d / y).tolist()
             mse += (d**2).tolist()
         MAE = np.array(mae).mean()
+        MAE2 = np.array(mae2).mean()
         MAPE = np.array(mape).mean()
         RMSE = np.sqrt(np.array(mse).mean())
-        return MAE, MAPE, RMSE
+        return MAE, MAPE, RMSE, MAE2
 
 def plot(n, future, y, y_pred):
     plt.figure(figsize=(12,6))
@@ -67,4 +71,11 @@ def plot_graph(G):
     print(G.edge_index.shape)
     G = nx.from_edgelist(edges)
     nx.draw(G)
+    plt.show()
+
+def plot_pred(X,Y,out):
+    hori = np.arange(0, len(out))
+    plt.plot(hori, out, 'r', linewidth=2.0)
+    plt.plot(hori, X, 'b', linewidth=2.0)
+    plt.plot(hori, Y, 'g', linewidth=2.0)
     plt.show()
