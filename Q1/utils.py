@@ -47,3 +47,24 @@ def plot(n, future, y, y_pred):
 
     plt.plot(np.arange(n), y, 'r', linewidth=2.0)
     plt.plot(np.arange(n, n+future), y_pred, 'r:', linewidth=2.0)
+
+def plot_y(dataset):
+    # print(dataset.shape)
+    y = []
+    for i in range(len(dataset)):
+        print(i)
+        y.append(dataset[i]['x'][0].item())
+    print(y)
+    plt.plot(y)
+    plt.show()
+
+def plot_graph(G):
+    # use networkx
+    import networkx as nx
+    import matplotlib.pyplot as plt
+    # load networkx graph
+    edges = G.edge_index.t().numpy()
+    print(G.edge_index.shape)
+    G = nx.from_edgelist(edges)
+    nx.draw(G)
+    plt.show()

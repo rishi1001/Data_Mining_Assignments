@@ -22,9 +22,13 @@ class graph():
         
         t=torch.tensor(df.values)
         self.edge_index , self.edge_weight = dense_to_sparse(t)
-        self.edge_weight=self.edge_weight
+        self.normalise()
         #self.mapping ={i:cols[i] for i in range(len(cols))}                    
         self.mapping=cols
+
+    def normalise(self):
+        self.edge_weight=self.edge_weight/torch.max(self.edge_weight)
+        self.edge_weight=self.edge_weight.double()
 
 class data_point():
 

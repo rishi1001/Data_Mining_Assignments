@@ -8,7 +8,7 @@ from utils import *
 from torch.utils.data import DataLoader
 
 
-G=graph("../a3_datasets/d1_adj_mx.csv")
+G=graph("../a3_datasets/temp_adj_mx.csv")
 print(G.edge_index)
 print(G.edge_weight.shape)
 
@@ -19,15 +19,20 @@ def convert(l,mapping):
   return [m[str(i)] for i in l]  
 
 
-dataset=TimeSeries("../a3_datasets/d1_X.csv",G.mapping)
+dataset=TimeSeries("../a3_datasets/temp_X.csv",G.mapping)
+# plot_y(dataset)
+# plot_graph(G)
 
 splits = np.load("../a3_datasets/d1_graph_splits.npz") 
 train_node_ids = convert(splits["train_node_ids"],G.mapping) 
+print(len(train_node_ids))
 val_node_ids = convert(splits["val_node_ids"],G.mapping) 
+print(len(val_node_ids))
 test_node_ids = convert(splits["test_node_ids"],G.mapping)
+print(len(test_node_ids))
 # train_node_ids = [0,1,2,3,4]
-# val_node_ids = [0,1,2,3,4] 
-# test_node_ids = [0,1,2,3,4]
+# val_node_ids = [0,1,4] 
+# test_node_ids = [2,3]
 # # TODO ask if we can use featuers of test nodes also while training?
 
 
@@ -47,6 +52,7 @@ def train(epoch):
     running_loss = 0.0
     # batch wise training
     for i,data in enumerate(dataset):
+        # print(i)
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data['x'], G.edge_index, G.edge_weight)  
@@ -55,6 +61,8 @@ def train(epoch):
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
+        # if i==100:
+        #     break
 
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
 
