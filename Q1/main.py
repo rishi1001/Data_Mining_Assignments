@@ -1,45 +1,16 @@
 import torch
 import os
-from dataset import data_point, graph
+from dataset import  graph,TimeSeries
 from model import GCN
 import pandas as pd
 import numpy as np
 from utils import *
+from torch.utils.data import DataLoader
+
 
 G=graph("../a3_datasets/d1_adj_mx.csv")
 print(G.edge_index)
 print(G.edge_weight.shape)
-
-
-def read_data():
-  dataset=[]
-  path='../a3_datasets/d1_X.csv'
-
-  df = pd.read_csv(path)
-  df=df.drop(['Unnamed: 0'], axis=1)
-   
-#   for i in range(len(df)-1):  # TODO : change this 
-#     # print("dddddddd")
-#     print(i)
-#     d=df.loc[i:i+1,:]
-#     d=d.reset_index(drop=True)
-#     dataset.append(data_point(d,G.mapping))
-
-  i = np.arange(df.shape[0]-1)
-  i_1 = i+1
-  pairs = np.array([i,i_1]).T.ravel()
-  dataset = df.loc[pairs,G.mapping].to_numpy().reshape(df.shape[0]-1, 2, len(G.mapping),1)
-  
-  
-#   for i in range(50):  # TODO : CCHECk this 
-#     # print("dddddddd")
-#     # print(i)
-#     d=df.loc[i:i+1,:]
-#     d=d.reset_index(drop=True)
-#     dataset.append(data_point(d,G.mapping))
-  
-  return torch.tensor(dataset).double()
-
 
 # TODO masking for train and test while training & loss function
 # TODO add code for validation
@@ -48,14 +19,19 @@ def convert(l,mapping):
   return [m[str(i)] for i in l]  
 
 
-dataset = read_data()
+dataset=TimeSeries("../a3_datasets/d1_X.csv",G.mapping)
+
 splits = np.load("../a3_datasets/d1_graph_splits.npz") 
 train_node_ids = convert(splits["train_node_ids"],G.mapping) 
 val_node_ids = convert(splits["val_node_ids"],G.mapping) 
 test_node_ids = convert(splits["test_node_ids"],G.mapping)
+# train_node_ids = [0,1,2,3,4]
+# val_node_ids = [0,1,2,3,4] 
+# test_node_ids = [0,1,2,3,4]
+# # TODO ask if we can use featuers of test nodes also while training?
 
-# TODO ask if we can use featuers of test nodes also while training?
 
+dataloader = DataLoader(dataset, batch_size=4,shuffle=True, num_workers=0)
 
 model = GCN(hidden_channels=16)
 model=model.double()
@@ -70,16 +46,12 @@ def train(epoch):
 
     running_loss = 0.0
     # batch wise training
-    for data in dataset:
+    for i,data in enumerate(dataset):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
-        out = model(data[0], G.edge_index, G.edge_weight)  
-        loss = criterion(out[train_node_ids], data[1][train_node_ids])/len(train_node_ids)
-    #   make_dot(out).render("graph.dot", format="png")
-    #   print(out)
-        #print("dataaa y")
-        #print(data.y)
-        #print("out", out)
+        out = model(data['x'], G.edge_index, G.edge_weight)  
+        loss = criterion(out[train_node_ids], data['y'][train_node_ids])/len(train_node_ids)
+
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
@@ -93,11 +65,11 @@ def test(test=False):         # test=True for test set
     running_loss = 0.0
     with torch.no_grad():
         for data in dataset:
-            out = model(data[0], G.edge_index, G.edge_weight)
+            out = model(data['x'], G.edge_index, G.edge_weight)
             if test:
-                loss = criterion(out[test_node_ids], data[1][test_node_ids])/len(test_node_ids)
+                loss = criterion(out[test_node_ids], data['y'][test_node_ids])/len(test_node_ids)
             else:
-                loss = criterion(out[val_node_ids], data[1][val_node_ids])/len(val_node_ids)
+                loss = criterion(out[val_node_ids], data['y'][val_node_ids])/len(val_node_ids)
             running_loss += loss.item()
         print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
         

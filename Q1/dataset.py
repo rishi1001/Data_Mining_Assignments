@@ -5,7 +5,7 @@ import torch
 import pandas as pd
 import torch
 from torch_geometric.utils import dense_to_sparse
-
+from torch.utils.data import Dataset
 class graph():
 
     def __init__ (self,path):
@@ -48,4 +48,20 @@ class data_point():
         self.y=torch.tensor(l).double()
         
         
+    
+class TimeSeries(Dataset):
+    def __init__(self,csv_file,mapping) -> None:
+        super().__init__()
+        df = pd.read_csv(csv_file)
+        df=df.drop(['Unnamed: 0'], axis=1)
+        i = np.arange(df.shape[0]-1)
+        i_1 = i+1
+        pairs = np.array([i,i_1]).T.ravel()
+        self.dataset = df.loc[pairs,mapping].to_numpy().reshape(df.shape[0]-1, 2, len(mapping),1)
+
+    def __len__(self):
+        return len(self.dataset)
+    
+    def __getitem__(self, idx):
+        return {'x':torch.tensor(self.dataset[idx][0]).type(torch.DoubleTensor),'y': torch.tensor(self.dataset[idx][1]).type(torch.DoubleTensor)} 
     
