@@ -65,6 +65,8 @@ def train(epoch):
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
+        # if i==100:
+        #     break
 
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / batch_size))
 
