@@ -1,54 +1,52 @@
 import torch
 import os
-from dataset import  graph,TimeSeries
+from dataset import TimeSeries
 from model import GCN
 import pandas as pd
 import numpy as np
 from utils import *
-from torch.utils.data import DataLoader
+from torch_geometric.loader import DataLoader
 
-
-G=graph("../a3_datasets/d2_adj_mx.csv")
-print(G.edge_index)
-print(G.edge_weight.shape)
-
-# TODO masking for train and test while training & loss function
-# TODO add code for validation
 def convert(l,mapping):
   m = {mapping[i]:i for i in range(len(mapping))}
   return [m[str(i)] for i in l]  
 
+def get_train_node_ids(train_node_ids, batch_size):
+    train_ids = []
+    for i in range(batch_size):
+        for x in train_node_ids:
+            train_ids.append(x+i*dataset.num_nodes)
+    print(train_ids)
+    return train_ids
 
-dataset=TimeSeries("../a3_datasets/d2_X.csv",G.mapping)
-# print(dataset[0])
-# exit(0)
-splits = np.load("../a3_datasets/d2_graph_splits.npz") 
-train_node_ids = convert(splits["train_node_ids"],G.mapping) 
-val_node_ids = convert(splits["val_node_ids"],G.mapping) 
-test_node_ids = convert(splits["test_node_ids"],G.mapping)
-# train_node_ids = [0,1,2,3,4]
-# val_node_ids = [0,1,2,3,4] 
-# test_node_ids = [0,1,2,3,4]
-# # TODO ask if we can use featuers of test nodes also while training?
+### model-parameters
+batch_size=2
+hidden_layers=16
+lr=0.01
+weight_decay=5e-4
+num_epochs=100
+normalize=True
+
+dataset=TimeSeries("../a3_datasets/d1_X.csv","../a3_datasets/d1_adj_mx.csv",normalize)
+dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
+
+splits = np.load("../a3_datasets/d1_graph_splits.npz") 
+train_node_ids = convert(splits["train_node_ids"],dataset.mapping) 
+val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
+test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
+
+train_node_ids= get_train_node_ids(train_node_ids,2)
+val_node_ids= get_train_node_ids(val_node_ids,2)
 
 
-dataloader = DataLoader(dataset, batch_size=1,shuffle=True, num_workers=0)
 
-model = GCN(hidden_channels=16)
+model = GCN(hidden_channels=hidden_layers)
 model=model.double()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss()
 
 best_loss = -1
 bestmodel = None
-
-# for i,data in enumerate(dataloader):
-#     print(i)
-#     print(data['x'].shape)
-#     print(data['x'])
-#     print(X)
-#     exit(0)
-# exit(0)
 
 def train(epoch):
     model.train()
@@ -58,17 +56,17 @@ def train(epoch):
     for i,data in enumerate(dataloader):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
-        ss=data['x'].shape[1]
-        X=data['x'].reshape(ss,1)
-        Y=data['y'].reshape(ss,1)
-        out = model(X, G.edge_index,G.edge_weight)  
-        loss = criterion(out[train_node_ids], Y[train_node_ids])/len(train_node_ids)
+        out = model(data.x, data.edge_index,data.edge_weight)  
+        # print(out)
+        loss = criterion(out[train_node_ids], data.y[train_node_ids])
+        # print(loss)
+
 
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
 
-    print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
+    print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / batch_size))
 
 def test(test=False):         # test=True for test set
     model.eval()
@@ -77,16 +75,13 @@ def test(test=False):         # test=True for test set
     running_loss = 0.0
     with torch.no_grad():
         for data in dataloader:
-            ss=data['x'].shape[1]
-            X=data['x'].reshape(ss,1)
-            Y=data['y'].reshape(ss,1)
-            out = model(X, G.edge_index, G.edge_weight)
+            out = model(data.x, data.edge_index, data.edge_weight)
             if test:
-                loss = criterion(out[test_node_ids], Y[test_node_ids])/len(test_node_ids)
+                loss = criterion(out[test_node_ids], data.y[test_node_ids])
             else:
-                loss = criterion(out[val_node_ids], Y[val_node_ids])/len(val_node_ids)
+                loss = criterion(out[val_node_ids], data.y[val_node_ids])
             running_loss += loss.item()
-        print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / (len(dataset))))
+        print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / batch_size))
         
     
     if test==False and (best_loss==-1 or running_loss < best_loss):
@@ -101,10 +96,7 @@ if __name__ == '__main__':
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
 
-
-    num_epochs = 100
-    for epoch in range(num_epochs):  # loop over the dataset multiple times
-        # print('epoch ', epoch + 1)
+    for epoch in range(num_epochs): 
         train(epoch)
         test()      # on validation set    
 
