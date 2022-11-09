@@ -21,22 +21,24 @@ def evaluate_metric_scaler(model, data_iter, scaler):
         return MAE, MAPE, RMSE
 
 
-def evaluate_metric(model, X,Y, G):
+def evaluate_metric(model, dataset):
     model.eval()
     with torch.no_grad():
-        mae, mape, mse = [], [], []
-        y_pred = model(X, G.edge_index, G.edge_weight).view(len(X), -1)
-        print(y_pred)
-        print(Y)
-        print(y_pred.shape,Y.shape)
-        d = np.abs(Y - y_pred)
-        mae += d.tolist()
-        mape += (d / Y).tolist()
-        mse += (d**2).tolist()
+        mae, mape, mse, mae2 = [], [], [], []
+        for data in dataset:
+            y = data.y
+            y_pred = model(data.x, dataset.edge_index, dataset.edge_weight)
+            d = np.abs(y - y_pred)
+            d2 = np.abs(data.x - y)
+            mae += d.tolist()
+            mae2 += d2.tolist()
+            mape += (d / y).tolist()
+            mse += (d**2).tolist()
         MAE = np.array(mae).mean()
+        MAE2 = np.array(mae2).mean()
         MAPE = np.array(mape).mean()
         RMSE = np.sqrt(np.array(mse).mean())
-        return MAE, MAPE, RMSE
+        return MAE, MAPE, RMSE, MAE2
 
 def plot(n, future, y, y_pred):
     plt.figure(figsize=(12,6))
@@ -48,3 +50,31 @@ def plot(n, future, y, y_pred):
 
     plt.plot(np.arange(n), y, 'r', linewidth=2.0)
     plt.plot(np.arange(n, n+future), y_pred, 'r:', linewidth=2.0)
+
+def plot_y(dataset):
+    # print(dataset.shape)
+    y = []
+    for i in range(len(dataset)):
+        print(i)
+        y.append(dataset[i]['x'][0].item())
+    print(y)
+    plt.plot(y)
+    plt.show()
+
+def plot_graph(G):
+    # use networkx
+    import networkx as nx
+    import matplotlib.pyplot as plt
+    # load networkx graph
+    edges = G.edge_index.t().numpy()
+    print(G.edge_index.shape)
+    G = nx.from_edgelist(edges)
+    nx.draw(G)
+    plt.show()
+
+def plot_pred(X,Y,out):
+    hori = np.arange(0, len(out))
+    plt.plot(hori, out, 'r', linewidth=2.0)
+    plt.plot(hori, X, 'b', linewidth=2.0)
+    plt.plot(hori, Y, 'g', linewidth=2.0)
+    plt.show()

@@ -1,67 +1,51 @@
 import torch
 import os
-from dataset import data_point, graph
-from model import STConv
+from dataset import TimeSeries
+from model import TemporalGNN
 import pandas as pd
 import numpy as np
 from utils import *
+from torch_geometric.loader import DataLoader
 
-G=graph("../a3_datasets/d1_adj_mx.csv")
-print(G.edge_index)
-print(G.edge_weight.shape)
-
-
-def read_data():
-    dataset=[]
-    path='../a3_datasets/d1_X.csv'
-
-    df = pd.read_csv(path)
-    df=df.drop(['Unnamed: 0'], axis=1)
-    df=np.array(df.values)
-    print(df)
-    n_his=1
-    n_pred=1
-    n_route=df.shape[1]
-    print(df)
-    num=len(df)-n_his-n_pred+1
-    x = np.zeros([num, n_his, n_route,1])
-    # print(num,l,n_his,n_pred,n_route)
-    y = np.zeros([num, n_route])
-
-    cnt = 0
-    for i in range(num):
-        head = i
-        tail = i + n_his
-        # print(df[head:tail].shape)
-        #print(df[head:tail])
-        x[cnt, :, :, :] = df[head:tail].reshape(n_his, n_route,1)
-        y[cnt] = df[tail + n_pred - 1]
-        #print(y[cnt])
-        cnt += 1
-    return torch.from_numpy(x).double(), torch.from_numpy(y).double()
-# X,Y=read_data()
-
-  
-
-# TODO masking for train and test while training & loss function
-# TODO add code for validation
 def convert(l,mapping):
-    m = {mapping[i]:i for i in range(len(mapping))}
-    return [m[str(i)] for i in l]  
+  m = {mapping[i]:i for i in range(len(mapping))}
+  return [m[str(i)] for i in l]  
+
+def get_train_node_ids(train_node_ids, batch_size):
+    train_ids = []
+    for i in range(batch_size):
+        for x in train_node_ids:
+            train_ids.append(x+i*dataset.num_nodes)
+    # print(train_ids)
+    return train_ids
+
+## device setting
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+### model-parameters
+batch_size=2
+hidden_layers=16
+lr=0.01
+weight_decay=5e-4
+num_epochs=100
+normalize=False     # just keep it False always
+
+dataset=TimeSeries("../a3_datasets/d1_X.csv","../a3_datasets/d1_adj_mx.csv")
+dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
+
+splits = np.load("../a3_datasets/d1_graph_splits.npz") 
+train_node_ids = convert(splits["train_node_ids"],dataset.mapping) 
+val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
+test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
+
+train_node_ids= get_train_node_ids(train_node_ids,2)
+val_node_ids= get_train_node_ids(val_node_ids,2)
 
 
-X,Y = read_data()
-splits = np.load("../a3_datasets/d2_graph_splits.npz") 
-# train_node_ids = convert(splits["train_node_ids"],G.mapping) 
-# val_node_ids = convert(splits["val_node_ids"],G.mapping) 
-# test_node_ids = convert(splits["test_node_ids"],G.mapping)
 
-# TODO ask if we can use featuers of test nodes also while training?
-
-
-model = STConv(num_nodes=G.num_nodes, in_channels=1, hidden_channels=1, out_channels=1, kernel_size=1, K=2)
+model = TemporalGNN(node_features=2, periods=12).to(device)     # to device remains
 model=model.double()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1, weight_decay=5e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss()
 
 best_loss = -1
@@ -71,35 +55,45 @@ def train(epoch):
     model.train()
 
     running_loss = 0.0
-    optimizer.zero_grad()  # Clear gradients.
-    #print(data.features)
-#   print(data.features.shape)
-    out = model(X, G.edge_index, G.edge_weight).view(len(X), -1) 
-    loss = criterion(out,Y)
-#   make_dot(out).render("graph.dot", format="png")
-#   print(out)
-    #print("dataaa y")
-    #print(data.y)
-    #print("out", out)
-    loss.backward()
-    optimizer.step()
-    running_loss += loss.item()
+    # batch wise training
+    for i,data in enumerate(dataloader):
+        optimizer.zero_grad()  # Clear gradients.
+        #print(data.features)
+        out = model(data.x, data.edge_index,data.edge_weight)  
+        # print(out)
+        loss = criterion(out[train_node_ids], data.y[train_node_ids])
+        # print(loss)
 
-    print('epoch %d training loss: %.3f' % (epoch + 1, running_loss))
 
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item()
+        # if i==100:
+        #     break
+
+    print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / batch_size))
+
+# TODO
 def test(test=False):         # test=True for test set
     model.eval()
     global best_loss
     global bestmodel
     running_loss = 0.0
     with torch.no_grad():
-        out = model(X, G.edge_index, G.edge_weight).view(len(X), -1)
-        if test:
-            loss = criterion(out, Y)
-        else:
-            loss = criterion(out, Y)
+        out0 = []
+        X0 = []
+        Y0 = []
+        for data in dataloader:
+            out = model(data.x, data.edge_index, data.edge_weight)
+            if test:
+                loss = criterion(out[test_node_ids], data.y[test_node_ids])
+            else:
+                loss = criterion(out[val_node_ids], data.y[val_node_ids])
             running_loss += loss.item()
-        print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss ))
+        print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / batch_size))
+        
+        if test:
+            plot_pred(X0,Y0,out0)
         
     
     if test==False and (best_loss==-1 or running_loss < best_loss):
@@ -114,9 +108,7 @@ if __name__ == '__main__':
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
 
-    num_epochs = 10
-    for epoch in range(num_epochs):  # loop over the dataset multiple times
-        # print('epoch ', epoch + 1)
+    for epoch in range(num_epochs): 
         train(epoch)
         test()      # on validation set    
 
@@ -124,8 +116,8 @@ if __name__ == '__main__':
     test(test=True)
     print('Finished Training')
 
-    MAE, MAPE, RMSE = evaluate_metric(bestmodel,X,Y, G)
-    print("MAE: ", MAE)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(bestmodel, dataset)
+    print("MAE: ", MAE, MAE2)
 
     # TODO use the plotting function from utils.py
 

@@ -16,7 +16,7 @@ def get_train_node_ids(train_node_ids, batch_size):
     for i in range(batch_size):
         for x in train_node_ids:
             train_ids.append(x+i*dataset.num_nodes)
-    print(train_ids)
+    # print(train_ids)
     return train_ids
 
 ### model-parameters
@@ -43,7 +43,7 @@ val_node_ids= get_train_node_ids(val_node_ids,2)
 model = GCN(hidden_channels=hidden_layers)
 model=model.double()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-criterion = torch.nn.MSELoss()
+criterion = torch.nn.MSELoss(reduction='sum')
 
 best_loss = -1
 bestmodel = None
@@ -68,7 +68,7 @@ def train(epoch):
         # if i==100:
         #     break
 
-    print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / batch_size))
+    print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / len(train_node_ids)))
 
 def test(test=False):         # test=True for test set
     model.eval()
@@ -86,7 +86,10 @@ def test(test=False):         # test=True for test set
             else:
                 loss = criterion(out[val_node_ids], data.y[val_node_ids])
             running_loss += loss.item()
-        print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / batch_size))
+        if test:
+            print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / len(test_node_ids)))
+        else:
+            print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / len(val_node_ids)))
         
         if test:
             plot_pred(X0,Y0,out0)
