@@ -37,7 +37,7 @@ print("Total Nodes in Dataset: ",dataset.num_nodes)
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
 
 splits = np.load("../a3_datasets/d2_graph_splits.npz") 
-train_node_ids = convert(splits["train_node_ids"],dataset.mapping) 
+train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
 test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
@@ -53,7 +53,7 @@ val_loss=[]
 train_mae=[]
 val_mae=[]
 
-def train(epoch):
+def train(epoch,plot=False):
     model.train()
 
     running_loss = 0.0
@@ -75,9 +75,10 @@ def train(epoch):
         # if i==100:
         #     break
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss /(len(dataset)*len(train_node_ids)) ))
-    train_loss.append(running_loss /(len(dataset)*len(train_node_ids)))
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids)
-    train_mae.append(MAE)
+    if plot:
+        train_loss.append(running_loss /(len(dataset)*len(train_node_ids)))
+        MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids)
+        train_mae.append(MAE)
     
 
 def test(test=False,plot=False):         # test=True for test set
@@ -111,8 +112,8 @@ def test(test=False,plot=False):         # test=True for test set
 
         if (epoch%100==0 and not test and plot):
             x=[i for i in range(len(out0))]
-            plt.plot(x,out0,label="Model prediction")
-            plt.plot(x,y0,label="Actual")    
+            plt.plot(x,out0.cpu(),label="Model prediction")
+            plt.plot(x,y0.cpu(),label="Actual")    
             plt.draw()
             plt.legend()
             plt.savefig(f"plot_losses/{graph_name}/{epoch}.png")
@@ -136,7 +137,7 @@ if __name__ == '__main__':
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
     plot=True
     for epoch in range(num_epochs): 
-        train(epoch)
+        train(epoch,plot=plot)
         test(plot=plot)      # on validation set    
 
     print('performing test')

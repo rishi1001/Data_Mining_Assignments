@@ -26,10 +26,10 @@ def evaluate_metric(model, dataset,mask):
         mae, mape, mse, mae2 = [], [], [], []
         for i in range(len(dataset)):
             data = dataset[i]
-            y = data.y
-            y_pred = model(data.x, dataset.edge_index, dataset.edge_weight)
+            y = data.y.cpu()
+            y_pred = model(data.x, dataset.edge_index, dataset.edge_weight).cpu()
             d = np.abs(y[mask] - y_pred[mask])
-            d2 = np.abs(data.x[mask] - y[mask])
+            d2 = np.abs(data.x[mask].cpu() - y[mask])
             mae += d.tolist()
             mae2 += d2.tolist()
             mape += (d / y[mask]).tolist()

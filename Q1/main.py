@@ -7,6 +7,8 @@ import numpy as np
 from utils import *
 from torch_geometric.loader import DataLoader
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(device)
 def convert(l,mapping):
   m = {mapping[i]:i for i in range(len(mapping))}
   return [m[str(i)] for i in l]  
@@ -41,7 +43,7 @@ test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
 
 
-model = GCN(hidden_channels=hidden_layers)
+model = GCN(hidden_channels=hidden_layers).to(device)
 model=model.double()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss(reduction='sum')

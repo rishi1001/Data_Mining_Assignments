@@ -2,6 +2,8 @@ import torch
 import torch.nn.functional as F
 from torch_geometric_temporal.nn.recurrent import A3TGCN
 
+
+
 class TemporalGNN(torch.nn.Module):
     def __init__(self, node_features, periods):
         super(TemporalGNN, self).__init__()

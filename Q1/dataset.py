@@ -9,6 +9,8 @@ from torch_geometric.utils import dense_to_sparse
 from torch_geometric.data import Data
 from torch_geometric.data import Dataset
        
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class TimeSeries(Dataset):
     def __init__(self,csv_file,graph_file,normalize) -> None:
         super().__init__()
@@ -21,6 +23,8 @@ class TimeSeries(Dataset):
         self.edge_index , self.edge_weight = dense_to_sparse(t)
         self.edge_weight=self.edge_weight
         self.num_nodes = len(cols)
+        self.edge_index=self.edge_index.to(device)
+        self.edge_weight=self.edge_weight.to(device)
         
         if normalize:
             self.edge_weight=self.edge_weight/torch.max(self.edge_weight)
@@ -42,4 +46,4 @@ class TimeSeries(Dataset):
         y=self.dataset[idx+1]
         y=torch.reshape(y,(y.shape[0],1))
         d= Data(x=x,edge_index=self.edge_index,edge_attr=self.edge_weight,y=y)
-        return d
+        return d.to(device)
