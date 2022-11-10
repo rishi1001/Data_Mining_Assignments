@@ -16,7 +16,6 @@ def get_train_node_ids(train_node_ids, batch_size):
     for i in range(batch_size):
         for x in train_node_ids:
             train_ids.append(x+i*dataset.num_nodes)
-    # print(train_ids)
     return train_ids
 
 ### model-parameters
@@ -24,19 +23,17 @@ batch_size=2
 hidden_layers=16
 lr=0.01
 weight_decay=5e-4
-num_epochs=100
+num_epochs=1
 normalize=True
 
-dataset=TimeSeries("../a3_datasets/d1_X.csv","../a3_datasets/d1_adj_mx.csv",normalize)
+dataset=TimeSeries("../a3_datasets/d2_small_X.csv","../a3_datasets/d2_adj_mx.csv",normalize)
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
 
-splits = np.load("../a3_datasets/d1_graph_splits.npz") 
+splits = np.load("../a3_datasets/d2_graph_splits.npz") 
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping) 
+# print("here",len(train_node_ids))
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
 test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
-
-train_node_ids= get_train_node_ids(train_node_ids,2)
-val_node_ids= get_train_node_ids(val_node_ids,2)
 
 
 
@@ -57,8 +54,8 @@ def train(epoch):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data.x, data.edge_index,data.edge_weight)  
-        # print(out)
-        loss = criterion(out[train_node_ids], data.y[train_node_ids])
+        tt= get_train_node_ids(train_node_ids,data.y.shape[0]//dataset.num_nodes)
+        loss = criterion(out[tt], data.y[tt])
         # print(loss)
 
 
@@ -81,7 +78,7 @@ def test(test=False):         # test=True for test set
         Y0 = []
         for data in dataloader:
             out = model(data.x, data.edge_index, data.edge_weight)
-            if test:
+            if test:        # TODO here also change the node ids dependening on size of y and num_nodes
                 loss = criterion(out[test_node_ids], data.y[test_node_ids])
             else:
                 loss = criterion(out[val_node_ids], data.y[val_node_ids])
