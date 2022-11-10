@@ -1,7 +1,7 @@
 import torch
 import os
 from dataset import TimeSeries
-from model import GCN
+from model import *
 import pandas as pd
 import numpy as np
 from utils import *
@@ -22,11 +22,11 @@ def get_train_node_ids(train_node_ids, batch_size):
 
 ### model-parameters
 batch_size=2
-hidden_layers=16
-lr=0.01
+hidden_layers=32
+lr=0.001
 weight_decay=5e-4
 num_epochs=100
-normalize=True
+normalize=False
 
 graph_name="d2"      ###  can be d1,d2,temp
 model_path=f"./models/{graph_name}"
@@ -43,7 +43,8 @@ test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
 
 
-model = GCN(hidden_channels=hidden_layers).to(device)
+# model = GCN(hidden_channels=hidden_layers).to(device)
+model = GAT(hidden_channels=hidden_layers).to(device)
 model=model.double()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss(reduction='sum')

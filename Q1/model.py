@@ -1,7 +1,7 @@
 import torch
 from torch.nn import Linear
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
+from torch_geometric.nn import GCNConv, GATConv
 
 
 class GCN(torch.nn.Module):
@@ -41,9 +41,9 @@ class GAT(torch.nn.Module):
         super().__init__()
         torch.manual_seed(1234567)
         self.batch_norm0 = torch.nn.BatchNorm1d(1)
-        self.conv1 = GAT(1, hidden_channels,heads=heads)            # input features = 1
+        self.conv1 = GATConv(1, hidden_channels,heads=heads)            # input features = 1
         self.batch_norm1 = torch.nn.BatchNorm1d(hidden_channels*heads)
-        self.conv2 = GAT(hidden_channels*heads, 2*hidden_channels,heads=1)
+        self.conv2 = GATConv(hidden_channels*heads, 2*hidden_channels,heads=1)
         # mlp
         self.lin1 = Linear(2*hidden_channels, hidden_channels)
         self.lin2 = Linear(hidden_channels, 1)
