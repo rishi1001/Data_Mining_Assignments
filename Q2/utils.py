@@ -2,30 +2,31 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
-def evaluate_metric_scaler(model, data_iter, scaler):
-    model.eval()
-    with torch.no_grad():
-        mae, mape, mse = [], [], []
-        for x, y in data_iter:
-            y = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
-            y_pred = scaler.inverse_transform(
-                model(x).view(len(x), -1).cpu().numpy()
-            ).reshape(-1)
-            d = np.abs(y - y_pred)
-            mae += d.tolist()
-            mape += (d / y).tolist()
-            mse += (d**2).tolist()
-        MAE = np.array(mae).mean()
-        MAPE = np.array(mape).mean()
-        RMSE = np.sqrt(np.array(mse).mean())
-        return MAE, MAPE, RMSE
+# def evaluate_metric_scaler(model, data_iter, scaler):
+#     model.eval()
+#     with torch.no_grad():
+#         mae, mape, mse = [], [], []
+#         for x, y in data_iter:
+#             y = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
+#             y_pred = scaler.inverse_transform(
+#                 model(x).view(len(x), -1).cpu().numpy()
+#             ).reshape(-1)
+#             d = np.abs(y - y_pred)
+#             mae += d.tolist()
+#             mape += (d / y).tolist()
+#             mse += (d**2).tolist()
+#         MAE = np.array(mae).mean()
+#         MAPE = np.array(mape).mean()
+#         RMSE = np.sqrt(np.array(mse).mean())
+#         return MAE, MAPE, RMSE
 
 
 def evaluate_metric(model, dataset):
     model.eval()
     with torch.no_grad():
         mae, mape, mse, mae2 = [], [], [], []
-        for data in dataset:
+        for i in range(len(dataset)):
+            data = dataset[i]
             y = data.y
             y_pred = model(data.x, dataset.edge_index, dataset.edge_weight)
             d = np.abs(y - y_pred)

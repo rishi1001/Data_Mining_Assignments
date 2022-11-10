@@ -3,12 +3,11 @@ import scipy.sparse as sp
 import numpy as np
 import torch
 import pandas as pd
-import torch
 from torch_geometric.utils import dense_to_sparse
 # from torch.utils.data import Dataset
 from torch_geometric.data import Data
 from torch_geometric.data import Dataset
-       
+
 class TimeSeries(Dataset):
     def __init__(self,csv_file,graph_file,num_timesteps_in: int = 12, num_timesteps_out: int = 12) -> None:
         super().__init__()
@@ -45,6 +44,7 @@ class TimeSeries(Dataset):
         assert(x.shape[1]==1 and x.shape[2]==12)
         y=self.dataset[idx+self.num_timesteps_in:idx+self.num_timesteps_in+self.num_timesteps_out]
         y=torch.permute(y,(1,0))
+        assert(y.shape[1]==12)
         d= Data(x=x,edge_index=self.edge_index,edge_attr=self.edge_weight,y=y)
         return d
 

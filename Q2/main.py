@@ -26,12 +26,11 @@ batch_size=32
 hidden_layers=16
 lr=0.01
 weight_decay=5e-4
-num_epochs=100
+num_epochs=1
 normalize=False     # just keep it False always
 
 dataset=TimeSeries("../a3_datasets/d2_small_X.csv","../a3_datasets/d2_adj_mx.csv")
-print(dataset.num_nodes)
-print(len(dataset))
+print("Total Nodes in Dataset: ",dataset.num_nodes)
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
 
 splits = np.load("../a3_datasets/d2_graph_splits.npz") 
@@ -53,13 +52,11 @@ def train(epoch):
     running_loss = 0.0
     # batch wise training
     for i,data in enumerate(dataloader):
-        # print(data)
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data.x, data.edge_index,data.edge_weight)  
         # print(out)
         # print(out.shape)
-        # print(data.y.shape[0]/dataset.num_nodes)
         tt= get_train_node_ids(train_node_ids,data.y.shape[0]//dataset.num_nodes)
         loss = criterion(out[tt], data.y[tt])
         # print(loss)

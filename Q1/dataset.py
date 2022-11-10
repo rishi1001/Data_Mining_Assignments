@@ -38,6 +38,8 @@ class TimeSeries(Dataset):
     def __getitem__(self, idx):
         # return {'x':torch.tensor(self.dataset[idx][0]).type(torch.DoubleTensor),'y': torch.tensor(self.dataset[idx][1]).type(torch.DoubleTensor),'edge_weight':self.edge_weight,'edge_index':self.edge_index} 
         x=self.dataset[idx]
+        x=torch.reshape(x,(x.shape[0],1))
         y=self.dataset[idx+1]
+        y=torch.reshape(y,(y.shape[0],1))
         d= Data(x=x,edge_index=self.edge_index,edge_attr=self.edge_weight,y=y)
         return d

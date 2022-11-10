@@ -6,3 +6,5 @@ torch-sparse
 torch-scatter
 torchviz
 numpy
+pandas
+torch-geometric-temporal
