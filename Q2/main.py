@@ -21,29 +21,25 @@ def get_train_node_ids(train_node_ids, batch_size):
 
 ## device setting
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 ### model-parameters
-batch_size=2
+batch_size=32
 hidden_layers=16
 lr=0.01
 weight_decay=5e-4
 num_epochs=100
 normalize=False     # just keep it False always
 
-dataset=TimeSeries("../a3_datasets/d1_X.csv","../a3_datasets/d1_adj_mx.csv")
+dataset=TimeSeries("../a3_datasets/d2_small_X.csv","../a3_datasets/d2_adj_mx.csv")
+print(dataset.num_nodes)
+print(len(dataset))
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
 
-splits = np.load("../a3_datasets/d1_graph_splits.npz") 
+splits = np.load("../a3_datasets/d2_graph_splits.npz") 
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping) 
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
 test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
-train_node_ids= get_train_node_ids(train_node_ids,2)
-val_node_ids= get_train_node_ids(val_node_ids,2)
-
-
-
-model = TemporalGNN(node_features=2, periods=12).to(device)     # to device remains
+model = TemporalGNN(node_features=1, periods=12).to(device)     # to device remains
 model=model.double()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss()
@@ -57,11 +53,15 @@ def train(epoch):
     running_loss = 0.0
     # batch wise training
     for i,data in enumerate(dataloader):
+        print(data)
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data.x, data.edge_index,data.edge_weight)  
         # print(out)
-        loss = criterion(out[train_node_ids], data.y[train_node_ids])
+        # print(out.shape)
+        print(data.y.shape[0]/dataset.num_nodes)
+        tt= get_train_node_ids(train_node_ids,data.y.shape[0]//dataset.num_nodes)
+        loss = criterion(out[tt], data.y[tt])
         # print(loss)
 
 

@@ -30,17 +30,14 @@ class TimeSeries(Dataset):
         
         df = pd.read_csv(csv_file)
         df=df.drop(['Unnamed: 0'], axis=1)
-        i = np.arange(df.shape[0]-1)
-        i_1 = i+1
-        pairs = np.array([i,i_1]).T.ravel()
-        self.dataset = df.loc[pairs,cols].to_numpy().reshape(df.shape[0]-1, 2, len(cols),1)
+        self.dataset=torch.tensor(df.values).type(torch.DoubleTensor)
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.dataset)-1
     
     def __getitem__(self, idx):
         # return {'x':torch.tensor(self.dataset[idx][0]).type(torch.DoubleTensor),'y': torch.tensor(self.dataset[idx][1]).type(torch.DoubleTensor),'edge_weight':self.edge_weight,'edge_index':self.edge_index} 
-        x=torch.tensor(self.dataset[idx][0]).type(torch.DoubleTensor)
-        y=torch.tensor(self.dataset[idx][1]).type(torch.DoubleTensor)
+        x=self.dataset[idx]
+        y=self.dataset[idx+1]
         d= Data(x=x,edge_index=self.edge_index,edge_attr=self.edge_weight,y=y)
         return d
