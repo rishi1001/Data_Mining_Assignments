@@ -53,13 +53,13 @@ def train(epoch):
     running_loss = 0.0
     # batch wise training
     for i,data in enumerate(dataloader):
-        print(data)
+        # print(data)
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data.x, data.edge_index,data.edge_weight)  
         # print(out)
         # print(out.shape)
-        print(data.y.shape[0]/dataset.num_nodes)
+        # print(data.y.shape[0]/dataset.num_nodes)
         tt= get_train_node_ids(train_node_ids,data.y.shape[0]//dataset.num_nodes)
         loss = criterion(out[tt], data.y[tt])
         # print(loss)
@@ -70,7 +70,7 @@ def train(epoch):
         running_loss += loss.item()
         # if i==100:
         #     break
-
+    ## TODO : waht factor to be multiplied
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / batch_size))
 
 # TODO
@@ -81,19 +81,32 @@ def test(test=False):         # test=True for test set
     running_loss = 0.0
     with torch.no_grad():
         out0 = []
-        X0 = []
-        Y0 = []
-        for data in dataloader:
+        y0 = []
+        for i in range(len(dataset)):
+            data=dataset[i]
             out = model(data.x, data.edge_index, data.edge_weight)
+            if (len(out0)==0):
+                out0=out[val_node_ids[0]]
+                y0=data.y[val_node_ids[0]]
+
             if test:
                 loss = criterion(out[test_node_ids], data.y[test_node_ids])
             else:
                 loss = criterion(out[val_node_ids], data.y[val_node_ids])
             running_loss += loss.item()
+        ## TODO : waht factor to be multiplied
         print('epoch %d Test loss: %.3f' % (epoch + 1, running_loss / batch_size))
         
-        if test:
-            plot_pred(X0,Y0,out0)
+
+        if (epoch%10==0 and not test):
+            x=[i for i in range(len(out0))]
+            plt.plot(x,out0,label="Model prediction")
+            plt.plot(x,y0,label="Actual")    
+            plt.draw()
+            plt.legend()
+            plt.savefig(f"plot_losses/d2/{epoch}.png")
+            plt.clf()
+
         
     
     if test==False and (best_loss==-1 or running_loss < best_loss):
