@@ -1,2 +1,4 @@
 env
+.env
 Q1/__pycache__/*
+Q2/__pycache__/*

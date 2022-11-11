@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from utils import *
 from torch_geometric.loader import DataLoader
+import sys
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
@@ -28,14 +29,25 @@ weight_decay=5e-4
 num_epochs=100
 normalize=False
 
-graph_name="d2"      ###  can be d1,d2,temp
+
+#dataset_X = "../a3_datasets/d2_small_X.csv"
+#dataset_adj = "../a3_datasets/d2_adj_mx.csv"
+#dataset_splits = "../a3_datasets/d2_graph_splits.npz"
+
+dataset_X = sys.argv[1]
+dataset_adj = sys.argv[2]
+dataset_splits = sys.argv[3]
+graph_name=sys.argv[4]      ###  can be d1,d2,temp
+
 model_path=f"./models/{graph_name}"
 os.makedirs(model_path,exist_ok=True)
+os.makedirs(f"./plot_losses/{graph_name}",exist_ok=True)
 
-dataset=TimeSeries("../a3_datasets/d2_small_X.csv","../a3_datasets/d2_adj_mx.csv",normalize)
+dataset=TimeSeries(dataset_X,dataset_adj,normalize)
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
+print("Data read")
 
-splits = np.load("../a3_datasets/d2_graph_splits.npz") 
+splits = np.load(dataset_splits) 
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping) 
 # print("here",len(train_node_ids))
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
