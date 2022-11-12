@@ -23,11 +23,10 @@ def get_train_node_ids(train_node_ids, batch_size):
 ## device setting
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ### model-parameters
-batch_size=32
+batch_size=1024
 hidden_layers=16
 lr=0.01
 weight_decay=5e-4
-num_epochs=2
 normalize=False     # just keep it False always
 
 #dataset_X = "../a3_datasets/d2_small_X.csv"
@@ -39,10 +38,13 @@ dataset_X = sys.argv[1]
 dataset_adj = sys.argv[2]
 dataset_splits = sys.argv[3]
 graph_name = sys.argv[4]
+num_epochs=int(sys.argv[5])
+model_name = "A3TGCN"
 
-model_path=f"./models/{graph_name}"
+model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(model_path,exist_ok=True)
-os.makedirs(f"./plot_losses/{graph_name}",exist_ok=True)
+plot_path=f"./plot_losses/{model_name}/{num_epochs}/{graph_name}"
+os.makedirs(plot_path,exist_ok=True)
 
 dataset=TimeSeries(dataset_X,dataset_adj)
 print("Total Nodes in Dataset: ",dataset.num_nodes)
@@ -128,7 +130,7 @@ def test(test=False,plot=False):         # test=True for test set
             plt.plot(x,y0.cpu(),label="Actual")    
             plt.draw()
             plt.legend()
-            plt.savefig(f"plot_losses/{graph_name}/{epoch}.png")
+            plt.savefig(f"{plot_path}/{epoch}.png")
             plt.clf()
         if (not test):
             val_loss.append(running_loss /(len(dataset)*len(val_node_ids)))
@@ -160,7 +162,7 @@ if __name__ == '__main__':
     MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids)
     print("MAE: ", MAE, MAE2)
 
-    model.load_state_dict(torch.load('./models/bestval.pth'))
+    model.load_state_dict(torch.load(f'{model_path}/bestval.pth'))
     print("For Validation:  ")
     MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids)
     print("MAE: ", MAE, MAE2)
@@ -182,7 +184,7 @@ if __name__ == '__main__':
         plt.ylabel("Loss")
         plt.legend()
         plt.draw()
-        plt.savefig(f"plot_losses/{graph_name}/loss.png")
+        plt.savefig(f"{plot_path}/loss.png")
         plt.clf()    
 
         plt.plot(epochs,train_mae,label="Train_mae")
@@ -192,7 +194,7 @@ if __name__ == '__main__':
         plt.ylabel("MAE")
         plt.legend()
         plt.draw()
-        plt.savefig(f"plot_losses/{graph_name}/MAE.png")
+        plt.savefig(f"{plot_path}/MAE.png")
         plt.clf()    
 
 

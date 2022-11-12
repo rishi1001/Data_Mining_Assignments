@@ -1,14 +1,14 @@
 #!/bin/sh
 ### Set the job name (for your reference)
-#PBS -N q2_d1
+#PBS -N q2_d1_2
 ### Set the project name, your department code by default
 #PBS -P cse
 ### Request email when job begins and ends, don't change anything on the below line
 ### Specify email address to use for notification, don't change anything on the below line
 #### Request your resources, just change the numbers
-#PBS -l select=1:ncpus=2:ngpus=1:mem=32G
+#PBS -l select=1:ncpus=4:ngpus=0:mem=32G
 ### Specify "wallclock time" required for this job, hhh:mm:ss
-#PBS -l walltime=000:05:00
+#PBS -l walltime=010:00:00
 #PBS -l software=PYTHON
 
 # After job starts, must goto working directory. 
@@ -31,4 +31,4 @@ module load apps/anaconda/3
 source activate gnn
 module purge
 cd Q2
-python main.py ../a3_datasets/d1_X.csv ../a3_datasets/conv_d1_adj_mx.csv ../a3_datasets/d1_graph_splits.npz d1
+python main.py ../a3_datasets/d1_X.csv ../a3_datasets/conv_d1_adj_mx.csv ../a3_datasets/d1_graph_splits.npz d1 2

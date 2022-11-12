@@ -8,7 +8,9 @@ from utils import *
 from torch_geometric.loader import DataLoader
 import sys
 
+print(torch.cuda.is_available())
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+#device = 'cpu'
 print(device)
 def convert(l,mapping):
   m = {mapping[i]:i for i in range(len(mapping))}
@@ -26,7 +28,6 @@ batch_size=2
 hidden_layers=32
 lr=0.001
 weight_decay=5e-4
-num_epochs=100
 normalize=False
 
 
@@ -38,14 +39,17 @@ dataset_X = sys.argv[1]
 dataset_adj = sys.argv[2]
 dataset_splits = sys.argv[3]
 graph_name=sys.argv[4]      ###  can be d1,d2,temp
+num_epochs=int(sys.argv[5])
+model_name=sys.argv[6]
 
-model_path=f"./models/{graph_name}"
+model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(model_path,exist_ok=True)
-os.makedirs(f"./plot_losses/{graph_name}",exist_ok=True)
+plot_path=f"./plot_losses/{model_name}/{num_epochs}/{graph_name}"
+os.makedirs(plot_path,exist_ok=True)
+
 
 dataset=TimeSeries(dataset_X,dataset_adj,normalize)
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
-print("Data read")
 
 splits = np.load(dataset_splits) 
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping) 
@@ -53,10 +57,11 @@ train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
 test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
-
-
-# model = GCN(hidden_channels=hidden_layers).to(device)
-model = GAT(hidden_channels=hidden_layers).to(device)
+model = None
+if model_name=="gcn":
+	model = GCN(hidden_channels=hidden_layers).to(device)
+else:
+	model = GAT(hidden_channels=hidden_layers).to(device)
 model=model.double()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss(reduction='sum')
@@ -127,7 +132,7 @@ def test(test=False,plot=False):         # test=True for test set
             plt.plot(x,y0,label="Actual")    
             plt.draw()
             plt.legend()
-            plt.savefig(f"plot_losses/{graph_name}/{epoch}.png")
+            plt.savefig(f"{plot_path}/{epoch}.png")
             plt.clf()
         
         if (not test and plot):
@@ -138,7 +143,7 @@ def test(test=False,plot=False):         # test=True for test set
     if test==False and (best_loss==-1 or running_loss < best_loss):
         best_loss=running_loss
         # Saving our trained model
-        torch.save(model.state_dict(), './models/bestval.pth')
+        torch.save(model.state_dict(), f'{model_path}/bestval.pth')
 
 
 if __name__ == '__main__':
@@ -159,7 +164,7 @@ if __name__ == '__main__':
     MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids)
     print("MAE: ", MAE, MAE2)
 
-    model.load_state_dict(torch.load('./models/bestval.pth'))
+    model.load_state_dict(torch.load(f'{model_path}/bestval.pth'))
     print("For Validation:  ")
     MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids)
     print("MAE: ", MAE, MAE2)
@@ -179,7 +184,7 @@ if __name__ == '__main__':
         plt.ylabel("Loss")
         plt.legend()
         plt.draw()
-        plt.savefig(f"plot_losses/{graph_name}/loss.png")
+        plt.savefig(f"{plot_path}/loss.png")
         plt.clf()    
 
         plt.plot(epochs,train_mae,label="Train_mae")
@@ -189,8 +194,8 @@ if __name__ == '__main__':
         plt.ylabel("MAE")
         plt.legend()
         plt.draw()
-        plt.savefig(f"plot_losses/{graph_name}/MAE.png")
+        plt.savefig(f"{plot_path}/MAE.png")
         plt.clf()    
 
     # Saving our trained model
-    torch.save(model.state_dict(), './models/lastmodel.pth')
+    torch.save(model.state_dict(), f'{model_path}/lastmodel.pth')

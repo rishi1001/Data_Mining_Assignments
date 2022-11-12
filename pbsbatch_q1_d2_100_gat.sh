@@ -1,6 +1,6 @@
 #!/bin/sh
 ### Set the job name (for your reference)
-#PBS -N q2_d2_2
+#PBS -N q1_d2_100_gat
 ### Set the project name, your department code by default
 #PBS -P cse
 ### Request email when job begins and ends, don't change anything on the below line
@@ -30,5 +30,5 @@ module () {
 module load apps/anaconda/3
 source activate gnn
 module purge
-cd Q2
-python main.py ../a3_datasets/d2_X.csv ../a3_datasets/d2_adj_mx.csv ../a3_datasets/d2_graph_splits.npz d2 2
+cd Q1
+python main.py ../a3_datasets/d2_X.csv ../a3_datasets/d2_adj_mx.csv ../a3_datasets/d2_graph_splits.npz d2 100 gat
