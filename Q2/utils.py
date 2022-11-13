@@ -23,21 +23,26 @@ import matplotlib.pyplot as plt
 def evaluate_metric(model, dataset,mask):
     model.eval()
     with torch.no_grad():
-        mae, mape, mse, mae2 = [], [], [], []
+        n = len(dataset)
+        s = dataset[0].y.cpu()[mask]
+        MAE = torch.zeros_like(s)
+        MAE2 = torch.zeros_like(s)
+        MAPE = torch.zeros_like(s)
+        RMSE = torch.zeros_like(s)
         for i in range(len(dataset)):
-            data = dataset[i]
+            data=dataset[i]
             y = data.y.cpu()
             y_pred = model(data.x, dataset.edge_index, dataset.edge_weight).cpu()
             d = np.abs(y[mask] - y_pred[mask])
-            d2 = np.abs(data.x[mask].cpu() - y[mask])
-            mae += d.tolist()
-            mae2 += d2.tolist()
-            mape += (d / y[mask]).tolist()
-            mse += (d**2).tolist()
-        MAE = np.array(mae).mean()
-        MAE2 = np.array(mae2).mean()
-        MAPE = np.array(mape).mean()
-        RMSE = np.sqrt(np.array(mse).mean())
+            d2 = np.abs(data.x[mask].cpu().reshape(y[mask].shape) - y[mask])
+            MAE += d / n
+            MAE2 += d2 / n
+            MAPE += (d / y[mask]) / n
+            RMSE += (d**2) / n
+        MAE = torch.mean(MAE).item()
+        MAE2 = torch.mean(MAE2).item()
+        MAPE = torch.mean(MAPE).item()
+        RMSE = torch.sqrt(torch.mean(RMSE)).item()
         return MAE, MAPE, RMSE, MAE2
 
 def plot(n, future, y, y_pred):
