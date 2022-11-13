@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 #         RMSE = np.sqrt(np.array(mse).mean())
 #         return MAE, MAPE, RMSE
 
-def evaluate_metric(model, dataset,mask):
+def evaluate_metric(model, dataset,mask,diff=False):
     model.eval()
     with torch.no_grad():
         mae, mape, mse, mae2 = [], [], [], []
@@ -30,6 +30,8 @@ def evaluate_metric(model, dataset,mask):
             y_pred = model(data.x, dataset.edge_index, dataset.edge_weight).cpu()
             d = np.abs(y[mask] - y_pred[mask])
             d2 = np.abs(data.x[mask].cpu() - y[mask])
+            if diff:
+                d2 = np.abs(y[mask])
             mae += d.tolist()
             mae2 += d2.tolist()
             mape += (d / y[mask]).tolist()

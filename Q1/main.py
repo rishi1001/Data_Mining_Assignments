@@ -41,6 +41,7 @@ dataset_splits = sys.argv[3]
 graph_name=sys.argv[4]      ###  can be d1,d2,temp
 num_epochs=int(sys.argv[5])
 model_name=sys.argv[6]
+diff = True         # TODO maybe take input
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(model_path,exist_ok=True)
@@ -80,6 +81,7 @@ def train(epoch,plot=False):
     running_loss = 0.0
     # batch wise training
     for i,data in enumerate(dataloader):
+        print(i)
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data.x, data.edge_index,data.edge_weight)  
@@ -97,7 +99,7 @@ def train(epoch,plot=False):
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / (len(dataset)*len(train_node_ids))))
     if (plot):
         train_loss.append(running_loss /(len(dataset)*len(train_node_ids)))
-        MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids)
+        MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids, diff=diff)
         train_mae.append(MAE)
 
 def test(test=False,plot=False):         # test=True for test set
@@ -161,17 +163,17 @@ if __name__ == '__main__':
     print('Finished Training')
 
     print("For Training:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=diff)
     print("MAE: ", MAE, MAE2)
 
     model.load_state_dict(torch.load(f'{model_path}/bestval.pth'))
     print("For Validation:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids, diff=diff)
     print("MAE: ", MAE, MAE2)
     
     
     print("For Testing:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids, diff=diff)
     print("MAE: ", MAE, MAE2)
 
     if (plot):
