@@ -23,7 +23,6 @@ def get_train_node_ids(train_node_ids, batch_size):
 ## device setting
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ### model-parameters
-batch_size=1024
 hidden_layers=16
 lr=0.01
 weight_decay=5e-4
@@ -39,6 +38,7 @@ dataset_adj = sys.argv[2]
 dataset_splits = sys.argv[3]
 graph_name = sys.argv[4]
 num_epochs=int(sys.argv[5])
+batch_size=int(sys.argv[6])
 model_name = "A3TGCN"
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
@@ -54,6 +54,7 @@ splits = np.load(dataset_splits)
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
 test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
+
 
 model = TemporalGNN(node_features=1, periods=12).to(device)     # to device remains
 model=model.double()
@@ -91,7 +92,7 @@ def train(epoch,plot=False):
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss /(len(dataset)*len(train_node_ids)) ))
     if plot:
         train_loss.append(running_loss /(len(dataset)*len(train_node_ids)))
-        MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids)
+        MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=True)
         train_mae.append(MAE)
     
 
@@ -134,7 +135,7 @@ def test(test=False,plot=False):         # test=True for test set
             plt.clf()
         if (not test):
             val_loss.append(running_loss /(len(dataset)*len(val_node_ids)))
-            MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids)
+            MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids,diff=True)
             val_mae.append(MAE)
     
         
@@ -159,17 +160,17 @@ if __name__ == '__main__':
     print('Finished Training')
 
     print("For Training:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=True)
     print("MAE: ", MAE, MAE2)
 
     model.load_state_dict(torch.load(f'{model_path}/bestval.pth'))
     print("For Validation:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids,diff=True)
     print("MAE: ", MAE, MAE2)
     
     
     print("For Testing:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids,diff=True)
     print("MAE: ", MAE, MAE2)
 
 
