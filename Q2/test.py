@@ -3,7 +3,6 @@ import sys
 import numpy as np
 import pandas as pd
 from torch_geometric.utils import dense_to_sparse
-
 from model import *
 from dataset import TimeSeries
 
@@ -40,22 +39,21 @@ if __name__ == "__main__":
     model = None
     model = TemporalGNN(node_features=1, periods=f).to(device)     # to device remains
 
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
 
-    test_dataset = np.load(dataset_X)
+    test_dataset = torch.from_numpy(np.load(dataset_X)['x'])
     edge_index, edge_weight = read_graph(dataset_adj)
 
     results = []
 
     with torch.no_grad():
-        for x in test_dataset: # dataset returns one less probably
+        for x in test_dataset:
+            x=torch.reshape(x,(x.shape[0],x.shape[1],1))
+            x=torch.permute(x,(1,2,0))
             y_pred = model(x, edge_index, edge_weight).cpu()
             # since we are predicting y-x
             y_pred += x[-1]
             results.append(y_pred)
     
-    np.save(output_path, np.array(results))
-
-
-
+    np.savez(output_path, y=np.array(results))

@@ -36,12 +36,14 @@ normalize=False     # just keep it False always
 #dataset_splits = "../a3_datasets/d2_graph_splits.npz"
 #graph_name = "d2"
 
-dataset_X = sys.argv[1]
-dataset_adj = sys.argv[2]
-dataset_splits = sys.argv[3]
-graph_name = sys.argv[4]
-num_epochs=int(sys.argv[5])
-batch_size=int(sys.argv[6])
+p = sys.argv[1]
+f = sys.argv[2]
+dataset_X = sys.argv[3]
+dataset_adj = sys.argv[4]
+dataset_splits = sys.argv[5]
+graph_name = sys.argv[6]
+num_epochs=int(sys.argv[7])
+batch_size=int(sys.argv[8])
 model_name = "A3TGCN"
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"

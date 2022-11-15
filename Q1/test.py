@@ -20,6 +20,7 @@ if __name__ == "__main__":
     output_path = sys.argv[3]
     model_path = sys.argv[4]
     model_name = sys.argv[5]
+    print(sys.argv)
 
     model = None
     if model_name=="gcn":
@@ -32,7 +33,12 @@ if __name__ == "__main__":
 
     dataset=TimeSeries(dataset_X,dataset_adj,normalize)
 
-    results = pd.read_csv(dataset_X).drop(['Unnamed: 0'], axis=1)
+    results = pd.read_csv(dataset_X)
+    timestamps = pd.to_datetime(results[results.columns[0]])
+    results = results.drop(results.columns[0], axis=1)
+    timestamps = timestamps + (timestamps[1] - timestamps[0])
+    results.index = timestamps
+    results.index.name = None
 
     with torch.no_grad():
         for i in range(len(dataset)+1): # dataset returns one less probably

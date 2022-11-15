@@ -84,7 +84,6 @@ def train(epoch,plot=False):
     running_loss = 0.0
     # batch wise training
     for i,data in enumerate(dataloader):
-        print(i)
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data.x, data.edge_index,data.edge_weight)  
@@ -152,6 +151,7 @@ def test(test=False,plot=False):         # test=True for test set
 
 
 if __name__ == '__main__':
+    print(sys.argv)
     print('Start Training')
     os.makedirs('./models', exist_ok=True)
 
