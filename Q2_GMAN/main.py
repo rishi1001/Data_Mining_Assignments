@@ -39,7 +39,7 @@ normalize=False     # just keep it False always
 p = int(sys.argv[1])
 f = int(sys.argv[2])
 dataset_X = sys.argv[3]
-dataset_adj = sys.argv[4]
+SE_file = sys.argv[4]
 dataset_splits = sys.argv[5]
 graph_name = sys.argv[6]
 num_epochs=int(sys.argv[7])
@@ -51,15 +51,29 @@ os.makedirs(model_path,exist_ok=True)
 plot_path=f"./plot_losses/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(plot_path,exist_ok=True)
 
-dataset=TimeSeries(dataset_X,dataset_adj, num_timesteps_in=p, num_timesteps_out=f)
+dataset=TimeSeries(dataset_X, num_timesteps_in=p, num_timesteps_out=f)
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=False, num_workers=0)
+
+# spatial embedding 
+file = open(SE_file, mode = 'r')
+lines = file.readlines()
+temp = lines[0].split(' ')
+N, dims = int(temp[0]), int(temp[1])
+SE = np.zeros(shape = (N, dims), dtype = np.float32)
+for line in lines[1 :]:
+    temp = line.split(' ')
+    index = int(temp[0])
+    SE[index] = temp[1 :]
+
+SE=torch.from_numpy(SE)
+
 splits = np.load(dataset_splits)
-train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
-val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
-test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
+# train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
+# val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
+# test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
-
-model=GMAN(L=5,K=8,d=8,num_his=p,num_pre=f,batch_size=batch_size,bn_decay=0.8,use_bias=False,make=False)
+print(f)
+model=GMAN(L=5,K=8,d=8,num_his=p,num_pre=f,batch_size=batch_size,bn_decay=0.8,use_bias=False,mask=False)
 model=model
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss(reduction='sum')
@@ -80,9 +94,8 @@ def train(epoch,plot=False):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(x.float(),SE.float())  
-        exit(0)
-        # print(out)
-        # print(out.shape)
+        print(out)
+        print(out.shape)
         # tt= get_train_node_ids(train_node_ids,data.y.shape[0]//dataset.num_nodes)
         loss = criterion(out,y)
         # print(loss)
