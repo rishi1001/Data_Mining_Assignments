@@ -52,14 +52,14 @@ plot_path=f"./plot_losses/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(plot_path,exist_ok=True)
 
 dataset=TimeSeries(dataset_X,dataset_adj, num_timesteps_in=p, num_timesteps_out=f)
-dataloader = DataLoader(dataset, batch_size=2,shuffle=False, num_workers=0)
+dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=False, num_workers=0)
 splits = np.load(dataset_splits)
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
 test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
 
-model=GMAN(L=1,K=2,d=10,num_his=12,bn_decay=False,steps_per_day=24*12,use_bias=False,mask=False)
+model=GMAN(L=5,K=8,d=8,num_his=p,num_pre=f,batch_size=batch_size,bn_decay=0.8,use_bias=False,make=False)
 model=model
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss(reduction='sum')
@@ -76,12 +76,10 @@ def train(epoch,plot=False):
 
     running_loss = 0.0
     # batch wise training
-    for i in range(len(dataset)):
-        x,y,TE=dataset[i]
-        SE=torch.randn(3193,20)
+    for x,y in dataloader:
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
-        out = model(x.float(),SE.float(),TE.float())  
+        out = model(x.float(),SE.float())  
         exit(0)
         # print(out)
         # print(out.shape)
