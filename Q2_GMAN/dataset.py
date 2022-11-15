@@ -58,8 +58,7 @@ class TimeSeries(Dataset):
         y=self.dataset[idx+self.num_timesteps_in:idx+self.num_timesteps_in+self.num_timesteps_out]
         ## CODe
         y=y-x[self.num_timesteps_in-1]
-        d={'x':x,'y':y}
-        return d
+        return x,y
         
 
 
