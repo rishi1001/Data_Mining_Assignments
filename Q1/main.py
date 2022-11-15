@@ -27,7 +27,6 @@ def get_train_node_ids(train_node_ids, batch_size):
     return train_ids
 
 ### model-parameters
-batch_size=2
 hidden_layers=32
 lr=0.001
 weight_decay=5e-4
@@ -44,6 +43,7 @@ dataset_splits = sys.argv[3]
 graph_name=sys.argv[4]      ###  can be d1,d2,temp
 num_epochs=int(sys.argv[5])
 model_name=sys.argv[6]
+batch_size=int(sys.argv[7])
 diff = True         # TODO maybe take input
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
@@ -102,8 +102,8 @@ def train(epoch,plot=False):
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss / (len(dataset)*len(train_node_ids))))
     if (plot):
         train_loss.append(running_loss /(len(dataset)*len(train_node_ids)))
-        MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids, diff=diff)
-        train_mae.append(MAE)
+        # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids, diff=diff)
+        # train_mae.append(MAE)
 
 def test(test=False,plot=False):         # test=True for test set
     model.eval()
@@ -142,8 +142,8 @@ def test(test=False,plot=False):         # test=True for test set
         
         if (not test and plot):
             val_loss.append(running_loss /(len(dataset)*len(val_node_ids)))
-            MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids)
-            val_mae.append(MAE)
+            # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids)
+            # val_mae.append(MAE)
 
     if test==False and (best_loss==-1 or running_loss < best_loss):
         best_loss=running_loss
