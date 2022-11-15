@@ -9,7 +9,8 @@ from torch_geometric.data import Data
 from torch_geometric.data import Dataset
 
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+gpu=2
+device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
 class TimeSeries(Dataset):
     def __init__(self,csv_file,graph_file,num_timesteps_in: int = 12, num_timesteps_out: int = 12) -> None:
         super().__init__()

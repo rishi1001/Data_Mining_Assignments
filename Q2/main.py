@@ -7,6 +7,7 @@ import numpy as np
 from utils import *
 from torch_geometric.loader import DataLoader
 import sys
+from tqdm import tqdm
 
 def convert(l,mapping):
   m = {mapping[i]:i for i in range(len(mapping))}
@@ -21,7 +22,9 @@ def get_train_node_ids(train_node_ids, batch_size):
     return train_ids
 
 ## device setting
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+gpu=2
+device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+print(device)
 ### model-parameters
 hidden_layers=16
 lr=0.01
@@ -73,7 +76,7 @@ def train(epoch,plot=False):
 
     running_loss = 0.0
     # batch wise training
-    for data in dataloader:
+    for data in tqdm(dataloader):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data.x, data.edge_index,data.edge_weight)  
@@ -92,8 +95,8 @@ def train(epoch,plot=False):
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss /(len(dataset)*len(train_node_ids)) ))
     if plot:
         train_loss.append(running_loss /(len(dataset)*len(train_node_ids)))
-        MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=True)
-        train_mae.append(MAE)
+        # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=True)
+        # train_mae.append(MAE)
     
 
 def test(test=False,plot=False):         # test=True for test set
@@ -135,8 +138,8 @@ def test(test=False,plot=False):         # test=True for test set
             plt.clf()
         if (not test):
             val_loss.append(running_loss /(len(dataset)*len(val_node_ids)))
-            MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids,diff=True)
-            val_mae.append(MAE)
+            # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids,diff=True)
+            # val_mae.append(MAE)
     
         
     
@@ -175,7 +178,7 @@ if __name__ == '__main__':
 
 
     ## ploting
-    if (plot):
+    if (True):
         epochs=[i for i in range(len(train_loss))]
         # print(epochs)
         plt.plot(epochs,train_loss,label="Train_loss")
@@ -188,15 +191,15 @@ if __name__ == '__main__':
         plt.savefig(f"{plot_path}/loss.png")
         plt.clf()    
 
-        plt.plot(epochs,train_mae,label="Train_mae")
-        plt.plot(epochs,val_mae,label="Val_mae")    
+        # plt.plot(epochs,train_mae,label="Train_mae")
+        # plt.plot(epochs,val_mae,label="Val_mae")    
 
-        plt.xlabel("Epochs")
-        plt.ylabel("MAE")
-        plt.legend()
-        plt.draw()
-        plt.savefig(f"{plot_path}/MAE.png")
-        plt.clf()    
+        # plt.xlabel("Epochs")
+        # plt.ylabel("MAE")
+        # plt.legend()
+        # plt.draw()
+        # plt.savefig(f"{plot_path}/MAE.png")
+        # plt.clf()    
 
 
     

@@ -9,7 +9,10 @@ from torch_geometric.loader import DataLoader
 import sys
 
 print(torch.cuda.is_available())
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+gpu=1
+device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+print(device)
 #device = 'cpu'
 print(device)
 def convert(l,mapping):
