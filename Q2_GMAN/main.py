@@ -1,11 +1,11 @@
 import torch
 import os
 from dataset import TimeSeries
-from model import TemporalGNN
+from model import GMAN
 import pandas as pd
 import numpy as np
 from utils import *
-from torch_geometric.loader import DataLoader
+from torch.utils.data import DataLoader
 import sys
 from tqdm import tqdm
 
@@ -52,17 +52,19 @@ plot_path=f"./plot_losses/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(plot_path,exist_ok=True)
 
 dataset=TimeSeries(dataset_X,dataset_adj, num_timesteps_in=p, num_timesteps_out=f)
-print("Total Nodes in Dataset: ",dataset.num_nodes)
-dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
-
+dataloader = DataLoader(dataset, batch_size=2,shuffle=True, num_workers=0)
+for d in dataloader:
+    print(d['x'].shape)
+    print(d['y'].shape)
+    exit(0)
 splits = np.load(dataset_splits)
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
 test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
 
-model = TemporalGNN(node_features=1, p=p, f=f).to(device)     # to device remains
-model=model.double()
+model=GMAN(L=1,K=2,d=10,num_his=12,bn_decay=False,steps_per_day=24*12,use_bias=False,mask=False)
+model=model
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss(reduction='sum')
 
@@ -78,14 +80,17 @@ def train(epoch,plot=False):
 
     running_loss = 0.0
     # batch wise training
-    for data in tqdm(dataloader):
+    for i in range(len(dataset)):
+        x,y,TE=dataset[i]
+        SE=torch.randn(3193,20)
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
-        out = model(data.x, data.edge_index,data.edge_weight)  
+        out = model(x.float(),SE.float(),TE.float())  
+        exit(0)
         # print(out)
         # print(out.shape)
-        tt= get_train_node_ids(train_node_ids,data.y.shape[0]//dataset.num_nodes)
-        loss = criterion(out[tt], data.y[tt])
+        # tt= get_train_node_ids(train_node_ids,data.y.shape[0]//dataset.num_nodes)
+        loss = criterion(out,y)
         # print(loss)
 
 
@@ -94,6 +99,7 @@ def train(epoch,plot=False):
         running_loss += loss.item()
         # if i==100:
         #     break
+    
     print('epoch %d training loss: %.3f' % (epoch + 1, running_loss /(len(dataset)*len(train_node_ids)) ))
     if plot:
         train_loss.append(running_loss /(len(dataset)*len(train_node_ids)))
