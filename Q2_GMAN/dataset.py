@@ -12,26 +12,10 @@ from torch.utils.data import Dataset
 gpu=2
 device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
 class TimeSeries(Dataset):
-    def __init__(self,csv_file,graph_file,num_timesteps_in: int = 12, num_timesteps_out: int = 12) -> None:
+    def __init__(self,csv_file,num_timesteps_in: int = 12, num_timesteps_out: int = 12) -> None:
         super().__init__()
         self.num_timesteps_in=num_timesteps_in
         self.num_timesteps_out=num_timesteps_out
-
-        
-        df = pd.read_csv(graph_file,index_col=0)
-        cols=df.columns
-        df.columns=[i for i in range(len(cols))]
-        df=df.reset_index(drop=True)
-        
-        t=torch.tensor(df.values).type(torch.DoubleTensor)
-        self.edge_index , self.edge_weight = dense_to_sparse(t)
-        self.edge_weight=self.edge_weight
-        self.num_nodes = len(cols)
-        self.edge_index=self.edge_index.to(device)
-        self.edge_weight=self.edge_weight.to(device)
-
-        #self.mapping ={i:cols[i] for i in range(len(cols))}                    
-        self.mapping=cols
         
         df = pd.read_csv(csv_file)
         df=df.drop(['Unnamed: 0'], axis=1)

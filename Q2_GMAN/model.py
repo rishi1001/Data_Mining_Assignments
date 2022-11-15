@@ -174,15 +174,20 @@ class SpatioTemporalEmbedding(nn.Module):
         SE = self._fully_connected_se(SE)
         # make TE of size n*(num_his+num_pred)*(num_his+num_pred)
         # TE is one hot encoding
-        
-        TE = torch.zeros((batch_size, num_his+num_pred, 2))
+
+        TE = torch.zeros((batch_size, num_his+num_pred, num_his+num_pred))
+        print(TE.shape)
         for i in range(batch_size):
+            print(F.one_hot(torch.arange(0, num_his+num_pred), num_his+num_pred))
             TE[i] = F.one_hot(torch.arange(0, num_his+num_pred), num_his+num_pred)
         TE = TE.unsqueeze(dim=2)
         # print(TE.shape)
         TE = self._fully_connected_te(TE)
         # print("TE",TE.shape)
+        # print(SE.shape)
+        # print(TE.shape)
         return SE + TE
+
 
 
 class SpatialAttention(nn.Module):
@@ -228,8 +233,6 @@ class SpatialAttention(nn.Module):
             * **X** (PyTorch Float Tensor) - Spatial attention scores, with shape (batch_size, num_step, num_nodes, K*d).
         """
         batch_size = X.shape[0]
-        # print('X',X.shape)
-        # print('STE',STE.shape)
         X = torch.cat((X, STE), dim=-1)
         query = self._fully_connected_q(X)
         key = self._fully_connected_k(X)
@@ -554,16 +557,13 @@ class GMAN(nn.Module):
             # # print('ssssss',X.shape)
             X = self._fully_connected_1(X)
             # # print('sss',X.shape)
-            STE = self._st_embedding(SE, TE, self._batch_size ,self._num_his, self._num_pre)
+            STE = self._st_embedding(SE, self._batch_size ,self._num_his, self._num_pre)
             STE_his = STE[:, : self._num_his]
             STE_pred = STE[:, self._num_his :]
-            print("here")
             for net in self._st_att_block1:
                 X = net(X, STE_his)
             X = self._transform_attention(X, STE_his, STE_pred)
-            print("hehee")
             for net in self._st_att_block2:
                 X = net(X, STE_pred)
             X = torch.squeeze(self._fully_connected_2(X), 3)
-            print("sjsjs")            
             return X
