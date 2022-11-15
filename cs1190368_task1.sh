@@ -1,0 +1,8 @@
+cd Q1
+if [[ "$1" == "train" ]]; then
+    python main.py $2 $3 $4 d1 100 gat 64
+    ln -s $3 cs1190368_task1_last_adj.csv
+else
+    python test.py $2 cs1190368_task1_last_adj.csv $3 $4 gat
+fi
+cd ..
