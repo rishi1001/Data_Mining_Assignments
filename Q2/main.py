@@ -36,8 +36,8 @@ normalize=False     # just keep it False always
 #dataset_splits = "../a3_datasets/d2_graph_splits.npz"
 #graph_name = "d2"
 
-p = sys.argv[1]
-f = sys.argv[2]
+p = int(sys.argv[1])
+f = int(sys.argv[2])
 dataset_X = sys.argv[3]
 dataset_adj = sys.argv[4]
 dataset_splits = sys.argv[5]
@@ -51,7 +51,7 @@ os.makedirs(model_path,exist_ok=True)
 plot_path=f"./plot_losses/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(plot_path,exist_ok=True)
 
-dataset=TimeSeries(dataset_X,dataset_adj)
+dataset=TimeSeries(dataset_X,dataset_adj, num_timesteps_in=p, num_timesteps_out=f)
 print("Total Nodes in Dataset: ",dataset.num_nodes)
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=True, num_workers=0)
 
@@ -61,7 +61,7 @@ val_node_ids = convert(splits["val_node_ids"],dataset.mapping)
 test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
 
-model = TemporalGNN(node_features=1, periods=12).to(device)     # to device remains
+model = TemporalGNN(node_features=1, p=p, f=f).to(device)     # to device remains
 model=model.double()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 criterion = torch.nn.MSELoss(reduction='sum')

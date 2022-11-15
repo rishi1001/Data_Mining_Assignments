@@ -27,7 +27,7 @@ if __name__ == "__main__":
         model = GCN(hidden_channels=hidden_layers).to(device)
     else:
         model = GAT(hidden_channels=hidden_layers).to(device)
-
+    model=model.double()
     model.load_state_dict(torch.load(model_path))
     model.eval()
 
@@ -42,10 +42,13 @@ if __name__ == "__main__":
 
     with torch.no_grad():
         for i in range(len(dataset)+1): # dataset returns one less probably
+            print(i)
             data = dataset[i]
             y_pred = model(data.x, dataset.edge_index, dataset.edge_weight).cpu()
             # since we are predicting y-x
             y_pred += data.x
+            y_pred = y_pred.ravel().tolist()
+            # print(y_pred.shape)
             results.iloc[i] = y_pred
     
     results.to_csv(output_path)

@@ -37,12 +37,12 @@ if __name__ == "__main__":
     model_path = sys.argv[6]
 
     model = None
-    model = TemporalGNN(node_features=1, periods=f).to(device)     # to device remains
-
+    model = TemporalGNN(node_features=1, p=p, f=f).to(device)     # to device remains
+    model=model.double()
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
 
-    test_dataset = torch.from_numpy(np.load(dataset_X)['x'])
+    test_dataset = torch.from_numpy(np.load(dataset_X)['x']).double()
     edge_index, edge_weight = read_graph(dataset_adj)
 
     results = []
@@ -53,7 +53,8 @@ if __name__ == "__main__":
             x=torch.permute(x,(1,2,0))
             y_pred = model(x, edge_index, edge_weight).cpu()
             # since we are predicting y-x
-            y_pred += x[-1]
-            results.append(y_pred)
-    
+            y_pred += x[:,:,-1]
+            y_pred = y_pred.permute((1,0))
+            results.append(y_pred.numpy())
+    print(np.array(results).shape)
     np.savez(output_path, y=np.array(results))

@@ -5,14 +5,14 @@ from torch_geometric_temporal.nn.recurrent import A3TGCN
 
 
 class TemporalGNN(torch.nn.Module):
-    def __init__(self, node_features, periods):
+    def __init__(self, node_features, p, f):
         super(TemporalGNN, self).__init__()
         # Attention Temporal Graph Convolutional Cell
         self.tgnn = A3TGCN(in_channels=node_features, 
                            out_channels=32, 
-                           periods=periods)
+                           periods=p)
         # Equals single-shot prediction
-        self.linear = torch.nn.Linear(32, periods)
+        self.linear = torch.nn.Linear(32, f)
 
     def forward(self, x, edge_index,edge_weights):
         """
