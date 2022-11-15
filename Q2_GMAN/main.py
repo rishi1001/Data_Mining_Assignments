@@ -52,11 +52,7 @@ plot_path=f"./plot_losses/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(plot_path,exist_ok=True)
 
 dataset=TimeSeries(dataset_X,dataset_adj, num_timesteps_in=p, num_timesteps_out=f)
-dataloader = DataLoader(dataset, batch_size=2,shuffle=True, num_workers=0)
-for d in dataloader:
-    print(d['x'].shape)
-    print(d['y'].shape)
-    exit(0)
+dataloader = DataLoader(dataset, batch_size=2,shuffle=False, num_workers=0)
 splits = np.load(dataset_splits)
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
