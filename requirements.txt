@@ -8,3 +8,4 @@ torchviz
 numpy
 pandas
 torch-geometric-temporal
+node2vec

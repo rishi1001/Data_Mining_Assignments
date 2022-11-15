@@ -157,8 +157,7 @@ class SpatioTemporalEmbedding(nn.Module):
         )
 
     def forward(
-        self, SE: torch.FloatTensor, TE: torch.FloatTensor, T: int
-    ) -> torch.FloatTensor:
+        self, SE: torch.FloatTensor, T: int, num_his: int, num_pred: int) -> torch.FloatTensor:
         """
         Making a forward pass of the spatial-temporal embedding.
 
@@ -172,13 +171,11 @@ class SpatioTemporalEmbedding(nn.Module):
         """
         SE = SE.unsqueeze(0).unsqueeze(0)
         SE = self._fully_connected_se(SE)
-        dayofweek = torch.empty(TE.shape[0], TE.shape[1], 7).to(SE.device)
-        timeofday = torch.empty(TE.shape[0], TE.shape[1], T).to(SE.device)
-        for i in range(TE.shape[0]):
-            dayofweek[i] = F.one_hot(TE[..., 0][i].to(torch.int64) % 7, 7)
-        for j in range(TE.shape[0]):
-            timeofday[j] = F.one_hot(TE[..., 1][j].to(torch.int64) % T, T)
-        TE = torch.cat((dayofweek, timeofday), dim=-1)
+        # make TE of size n*(num_his+num_pred)*(num_his+num_pred)
+        # TE is one hot encoding
+        TE = torch.empty(SE.shape[0], num_his+num_pred, num_his+num_pred).to(SE.device)
+        for i in range(num_his+num_pred):
+            TE[:, i, :] = torch.eye(i).to(SE.device)
         TE = TE.unsqueeze(dim=2)
         TE = self._fully_connected_te(TE)
         del dayofweek, timeofday
