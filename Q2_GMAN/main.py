@@ -39,7 +39,7 @@ normalize=False     # just keep it False always
 p = int(sys.argv[1])
 f = int(sys.argv[2])
 dataset_X = sys.argv[3]
-dataset_adj = sys.argv[4]
+SE_file = sys.argv[4]
 dataset_splits = sys.argv[5]
 graph_name = sys.argv[6]
 num_epochs=int(sys.argv[7])
@@ -53,6 +53,18 @@ os.makedirs(plot_path,exist_ok=True)
 
 dataset=TimeSeries(dataset_X,dataset_adj, num_timesteps_in=p, num_timesteps_out=f)
 dataloader = DataLoader(dataset, batch_size=2,shuffle=False, num_workers=0)
+
+# spatial embedding 
+f = open(SE_file, mode = 'r')
+lines = f.readlines()
+temp = lines[0].split(' ')
+N, dims = int(temp[0]), int(temp[1])
+SE = np.zeros(shape = (N, dims), dtype = np.float32)
+for line in lines[1 :]:
+    temp = line.split(' ')
+    index = int(temp[0])
+    SE[index] = temp[1 :]
+
 splits = np.load(dataset_splits)
 train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
 val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
