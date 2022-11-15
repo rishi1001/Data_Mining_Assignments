@@ -538,8 +538,7 @@ class GMAN(nn.Module):
         )
 
     def forward(
-            self, X: torch.FloatTensor, SE: torch.FloatTensor, TE: torch.FloatTensor
-        ) -> torch.FloatTensor:
+            self, X: torch.FloatTensor, SE: torch.FloatTensor) -> torch.FloatTensor:
             """
             Making a forward pass of GMAN.
 
