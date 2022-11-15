@@ -20,25 +20,28 @@ import matplotlib.pyplot as plt
 #         RMSE = np.sqrt(np.array(mse).mean())
 #         return MAE, MAPE, RMSE
 
-def evaluate_metric(model, dataset,mask,diff=False):
+def evaluate_metric(model, dataset,mask, SE, f, p ,diff=False):
     model.eval()
     with torch.no_grad():
-        n = len(dataset)
-        s = dataset[0].y.cpu()[mask]
-        MAE = torch.zeros_like(s)
-        MAE2 = torch.zeros_like(s)
-        MAPE = torch.zeros_like(s)
-        RMSE = torch.zeros_like(s)
+        n = len(mask)
+        MAE = torch.zeros(n,f)
+        MAE2 = torch.zeros(n,f)
+        MAPE = torch.zeros(n,f)
+        RMSE = torch.zeros(n,f)
         for i in range(len(dataset)):
-            data=dataset[i]
-            y = data.y.cpu()
-            y_pred = model(data.x, dataset.edge_index, dataset.edge_weight).cpu()
+            x,y=dataset[i]
+            x = x.unsqueeze(0)
+            y = y.cpu()
+            y_pred = model(x.float(),SE.float()).cpu() 
+            y = y.reshape(-1,f) 
+            y_pred = y_pred.reshape(-1,f)
+            x = x.reshape(-1,p)
             d = np.abs(y[mask] - y_pred[mask])
-            d2 = np.abs(data.x[mask].cpu().reshape(y[mask].shape) - y[mask])
+            d2 = np.abs(x[mask].cpu().reshape(y[mask].shape) - y[mask])
             if diff:
-                xx=data.x[mask].cpu().reshape(y[mask].shape)
-                xxx=xx[:,xx.shape[1]-1].reshape((1,xx.shape[0])).t()
-                d2 = np.abs(xx - (y[mask]+xxx))
+                xxx=x[:,x.shape[1]-1].reshape((1,x.shape[0])).t()
+                d2 = np.abs(x[mask] - (y[mask]+xxx[mask]))
+            n = len(dataset)
             MAE += d / n
             MAE2 += d2 / n
             MAPE += (d / y[mask]) / n

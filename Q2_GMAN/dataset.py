@@ -12,10 +12,13 @@ from torch.utils.data import Dataset
 gpu=2
 device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
 class TimeSeries(Dataset):
-    def __init__(self,csv_file,num_timesteps_in: int = 12, num_timesteps_out: int = 12) -> None:
+    def __init__(self,graph_file,csv_file,num_timesteps_in: int = 12, num_timesteps_out: int = 12) -> None:
         super().__init__()
         self.num_timesteps_in=num_timesteps_in
         self.num_timesteps_out=num_timesteps_out
+
+        df = pd.read_csv(graph_file,index_col=0)
+        self.mapping=df.columns
         
         df = pd.read_csv(csv_file)
         df=df.drop(['Unnamed: 0'], axis=1)
@@ -41,6 +44,7 @@ class TimeSeries(Dataset):
         x=self.dataset[idx:idx+self.num_timesteps_in]
         y=self.dataset[idx+self.num_timesteps_in:idx+self.num_timesteps_in+self.num_timesteps_out]
         ## CODe
+        # print("y1",y.shape)
         y=y-x[self.num_timesteps_in-1]
         return x,y
         

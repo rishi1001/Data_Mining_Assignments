@@ -31,19 +31,19 @@ lr=0.01
 weight_decay=5e-4
 normalize=False     # just keep it False always
 
-#dataset_X = "../a3_datasets/d2_small_X.csv"
-#dataset_adj = "../a3_datasets/d2_adj_mx.csv"
-#dataset_splits = "../a3_datasets/d2_graph_splits.npz"
-#graph_name = "d2"
+# dataset_X = "../a3_datasets/d2_small_X.csv"
+# dataset_splits = "../a3_datasets/d2_graph_splits.npz"
+# graph_name = "d2"
 
 p = int(sys.argv[1])
 f = int(sys.argv[2])
 dataset_X = sys.argv[3]
-SE_file = sys.argv[4]
-dataset_splits = sys.argv[5]
-graph_name = sys.argv[6]
-num_epochs=int(sys.argv[7])
-batch_size=int(sys.argv[8])
+dataset_adj=sys.argv[4]
+SE_file = sys.argv[5]
+dataset_splits = sys.argv[6]
+graph_name = sys.argv[7]
+num_epochs=int(sys.argv[8])
+batch_size=int(sys.argv[9])
 model_name = "A3TGCN"
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
@@ -51,7 +51,7 @@ os.makedirs(model_path,exist_ok=True)
 plot_path=f"./plot_losses/{model_name}/{num_epochs}/{graph_name}"
 os.makedirs(plot_path,exist_ok=True)
 
-dataset=TimeSeries(dataset_X, num_timesteps_in=p, num_timesteps_out=f)
+dataset=TimeSeries(dataset_adj,dataset_X, num_timesteps_in=p, num_timesteps_out=f)
 dataloader = DataLoader(dataset, batch_size=batch_size,shuffle=False, num_workers=0)
 
 # spatial embedding 
@@ -68,9 +68,9 @@ for line in lines[1 :]:
 SE=torch.from_numpy(SE)
 
 splits = np.load(dataset_splits)
-# train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
-# val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
-# test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
+train_node_ids = convert(splits["train_node_ids"],dataset.mapping)
+val_node_ids = convert(splits["val_node_ids"],dataset.mapping) 
+test_node_ids = convert(splits["test_node_ids"],dataset.mapping)
 
 print(f)
 model=GMAN(L=5,K=8,d=8,num_his=p,num_pre=f,batch_size=batch_size,bn_decay=0.8,use_bias=False,mask=False)
@@ -94,10 +94,9 @@ def train(epoch,plot=False):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(x.float(),SE.float())  
-        print(out)
-        print(out.shape)
-        # tt= get_train_node_ids(train_node_ids,data.y.shape[0]//dataset.num_nodes)
-        loss = criterion(out,y)
+        out = out.permute(2,0,1)
+        y = y.permute(2,0,1)
+        loss = criterion(out[train_node_ids].type(torch.DoubleTensor),y[train_node_ids].type(torch.DoubleTensor))
         # print(loss)
 
 
@@ -114,7 +113,7 @@ def train(epoch,plot=False):
         # train_mae.append(MAE)
     
 
-def test(test=False,plot=False):         # test=True for test set
+def test(epoch,test=False,plot=False):         # test=True for test set
     model.eval()
     global best_loss
     global bestmodel
@@ -122,18 +121,15 @@ def test(test=False,plot=False):         # test=True for test set
     with torch.no_grad():
         out0 = []
         y0 = []
-        for data in dataloader:
-            out = model(data.x, data.edge_index, data.edge_weight)
-            if (len(out0)==0):
-                out0=out[val_node_ids[0]]
-                y0=data.y[val_node_ids[0]]
-
+        for x,y in dataloader:
+            out = model(x.float(),SE.float())  
+            out = out.permute(2,0,1)
+            y = y.permute(2,0,1)
             if test:
-                tt= get_train_node_ids(test_node_ids,data.y.shape[0]//dataset.num_nodes)
-                loss = criterion(out[tt], data.y[tt])
+                loss = criterion(out[test_node_ids].type(torch.DoubleTensor),y[test_node_ids].type(torch.DoubleTensor))
             else:
-                tt= get_train_node_ids(val_node_ids,data.y.shape[0]//dataset.num_nodes)
-                loss = criterion(out[tt], data.y[tt])
+                loss = criterion(out[val_node_ids].type(torch.DoubleTensor),y[val_node_ids].type(torch.DoubleTensor))
+
             running_loss += loss.item()
         ## TODO : waht factor to be multiplied
         if test:
@@ -168,32 +164,32 @@ if __name__ == '__main__':
     os.makedirs('./models', exist_ok=True)
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
-    plot=True
+    plot=False
     for epoch in range(num_epochs): 
         train(epoch,plot=plot)
-        test(plot=plot)      # on validation set    
+        test(epoch=epoch,plot=plot)      # on validation set    
 
     print('performing test')
-    test(test=True)
+    test(epoch=num_epochs,test=True)
     print('Finished Training')
 
     print("For Training:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=True)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids, SE=SE, f=f, p=p,diff=True)
     print("MAE: ", MAE, MAE2)
 
     model.load_state_dict(torch.load(f'{model_path}/bestval.pth'))
     print("For Validation:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids,diff=True)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids,SE=SE, f=f, p=p,diff=True)
     print("MAE: ", MAE, MAE2)
     
     
     print("For Testing:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids,diff=True)
+    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids,SE=SE, f=f, p=p,diff=True)
     print("MAE: ", MAE, MAE2)
 
 
     ## ploting
-    if (True):
+    if (plot):
         epochs=[i for i in range(len(train_loss))]
         # print(epochs)
         plt.plot(epochs,train_loss,label="Train_loss")
