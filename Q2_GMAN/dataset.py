@@ -6,7 +6,7 @@ import pandas as pd
 from torch_geometric.utils import dense_to_sparse
 # from torch.utils.data import Dataset
 from torch_geometric.data import Data
-from torch_geometric.data import Dataset
+from torch.utils.data import Dataset
 
 
 gpu=2
@@ -23,7 +23,7 @@ class TimeSeries(Dataset):
         df.columns=[i for i in range(len(cols))]
         df=df.reset_index(drop=True)
         
-        t=torch.tensor(df.values)
+        t=torch.tensor(df.values).type(torch.DoubleTensor)
         self.edge_index , self.edge_weight = dense_to_sparse(t)
         self.edge_weight=self.edge_weight
         self.num_nodes = len(cols)
@@ -58,13 +58,8 @@ class TimeSeries(Dataset):
         y=self.dataset[idx+self.num_timesteps_in:idx+self.num_timesteps_in+self.num_timesteps_out]
         ## CODe
         y=y-x[self.num_timesteps_in-1]
-        x=torch.reshape(x,(x.shape[0],x.shape[1],1))
-        x=torch.permute(x,(1,2,0))
-        assert(x.shape[1]==1 and x.shape[2]==12)
-        y=torch.permute(y,(1,0))
-        assert(y.shape[1]==12)
-        d= Data(x=x,edge_index=self.edge_index,edge_attr=self.edge_weight,y=y)
-        return d.to(device)
-
+        d={'x':x,'y':y}
+        return d
+        
 
 

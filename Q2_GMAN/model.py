@@ -137,7 +137,7 @@ class SpatioTemporalEmbedding(nn.Module):
     """
 
     def __init__(
-        self, D: int, bn_decay: float, steps_per_day: int, use_bias: bool = True
+        self, D: int, bn_decay: float, total_frame: int, use_bias: bool = True
     ):
         super(SpatioTemporalEmbedding, self).__init__()
         self._fully_connected_se = FullyConnected(
@@ -149,7 +149,7 @@ class SpatioTemporalEmbedding(nn.Module):
         )
 
         self._fully_connected_te = FullyConnected(
-            input_dims=[steps_per_day + 7, D],
+            input_dims=[total_frame, D],
             units=[D, D],
             activations=[F.relu, None],
             bn_decay=bn_decay,
@@ -157,7 +157,7 @@ class SpatioTemporalEmbedding(nn.Module):
         )
 
     def forward(
-        self, SE: torch.FloatTensor, T: int, num_his: int, num_pred: int) -> torch.FloatTensor:
+        self, SE: torch.FloatTensor, batch_size: int, num_his: int, num_pred: int) -> torch.FloatTensor:
         """
         Making a forward pass of the spatial-temporal embedding.
 
@@ -170,15 +170,18 @@ class SpatioTemporalEmbedding(nn.Module):
             * **output** (PyTorch Float Tensor) - Spatial-temporal embedding, with shape (batch_size, num_his + num_pred, num_nodes, D).
         """
         SE = SE.unsqueeze(0).unsqueeze(0)
+        # print(SE.shape)
         SE = self._fully_connected_se(SE)
         # make TE of size n*(num_his+num_pred)*(num_his+num_pred)
         # TE is one hot encoding
-        TE = torch.empty(SE.shape[0], num_his+num_pred, num_his+num_pred).to(SE.device)
-        for i in range(num_his+num_pred):
-            TE[:, i, :] = torch.eye(i).to(SE.device)
+        
+        TE = torch.zeros((batch_size, num_his+num_pred, 2))
+        for i in range(batch_size):
+            TE[i] = F.one_hot(torch.arange(0, num_his+num_pred), num_his+num_pred)
         TE = TE.unsqueeze(dim=2)
+        # print(TE.shape)
         TE = self._fully_connected_te(TE)
-        del dayofweek, timeofday
+        # print("TE",TE.shape)
         return SE + TE
 
 
@@ -225,6 +228,8 @@ class SpatialAttention(nn.Module):
             * **X** (PyTorch Float Tensor) - Spatial attention scores, with shape (batch_size, num_step, num_nodes, K*d).
         """
         batch_size = X.shape[0]
+        # print('X',X.shape)
+        # print('STE',STE.shape)
         X = torch.cat((X, STE), dim=-1)
         query = self._fully_connected_q(X)
         key = self._fully_connected_k(X)
@@ -384,25 +389,25 @@ class SpatioTemporalAttention(nn.Module):
         self._temporal_attention = TemporalAttention(K, d, bn_decay, mask=mask)
         self._gated_fusion = GatedFusion(K * d, bn_decay)
 
-def forward(
-        self, X: torch.FloatTensor, STE: torch.FloatTensor
-    ) -> torch.FloatTensor:
-        """
-        Making a forward pass of the spatial-temporal attention block.
+    def forward(
+            self, X: torch.FloatTensor, STE: torch.FloatTensor
+        ) -> torch.FloatTensor:
+            """
+            Making a forward pass of the spatial-temporal attention block.
 
-        Arg types:
-            * **X** (PyTorch Float Tensor) - Input sequence, with shape (batch_size, num_step, num_nodes, K*d).
-            * **STE** (Pytorch Float Tensor) - Spatial-temporal embedding, with shape (batch_size, num_step, num_nodes, K*d).
+            Arg types:
+                * **X** (PyTorch Float Tensor) - Input sequence, with shape (batch_size, num_step, num_nodes, K*d).
+                * **STE** (Pytorch Float Tensor) - Spatial-temporal embedding, with shape (batch_size, num_step, num_nodes, K*d).
 
-        Return types:
-            * **X** (PyTorch Float Tensor) - Attention scores, with shape (batch_size, num_step, num_nodes, K*d).
-        """
-        HS = self._spatial_attention(X, STE)
-        HT = self._temporal_attention(X, STE)
-        H = self._gated_fusion(HS, HT)
-        del HS, HT
-        X = torch.add(X, H)
-        return X
+            Return types:
+                * **X** (PyTorch Float Tensor) - Attention scores, with shape (batch_size, num_step, num_nodes, K*d).
+            """
+            HS = self._spatial_attention(X, STE)
+            HT = self._temporal_attention(X, STE)
+            H = self._gated_fusion(HS, HT)
+            del HS, HT
+            X = torch.add(X, H)
+            return X
 
 
 
@@ -498,16 +503,17 @@ class GMAN(nn.Module):
         d: int,
         num_his: int,
         bn_decay: float,
-        steps_per_day: int,
+        num_pre: int,
         use_bias: bool,
         mask: bool,
     ):
         super(GMAN, self).__init__()
         D = K * d
         self._num_his = num_his
-        self._steps_per_day = steps_per_day
+        # self._steps_per_day = steps_per_day
+        self.num_pre = num_pre
         self._st_embedding = SpatioTemporalEmbedding(
-            D, bn_decay, steps_per_day, use_bias
+            D, bn_decay, num_his+num_pre, use_bias
         )
         self._st_att_block1 = nn.ModuleList(
             [SpatioTemporalAttention(K, d, bn_decay, mask) for _ in range(L)]
@@ -529,29 +535,34 @@ class GMAN(nn.Module):
             bn_decay=bn_decay,
         )
 
-def forward(
-        self, X: torch.FloatTensor, SE: torch.FloatTensor, TE: torch.FloatTensor
-    ) -> torch.FloatTensor:
-        """
-        Making a forward pass of GMAN.
+    def forward(
+            self, X: torch.FloatTensor, SE: torch.FloatTensor, TE: torch.FloatTensor
+        ) -> torch.FloatTensor:
+            """
+            Making a forward pass of GMAN.
 
-        Arg types:
-            * **X** (PyTorch Float Tensor) - Input sequence, with shape (batch_size, num_hist, num of nodes).
-            * **SE** (Pytorch Float Tensor) - Spatial embedding, with shape (numbed of nodes, K * d).
-            * **TE** (Pytorch Float Tensor) - Temporal embedding, with shape (batch_size, num_his + num_pred, 2).
+            Arg types:
+                * **X** (PyTorch Float Tensor) - Input sequence, with shape (batch_size, num_hist, num of nodes).
+                * **SE** (Pytorch Float Tensor) - Spatial embedding, with shape (numbed of nodes, K * d).
+                * **TE** (Pytorch Float Tensor) - Temporal embedding, with shape (batch_size, num_his + num_pred, 2).
 
-        Return types:
-            * **X** (PyTorch Float Tensor) - Output sequence for prediction, with shape (batch_size, num_pred, num of nodes).
-        """
-        X = torch.unsqueeze(X, -1)
-        X = self._fully_connected_1(X)
-        STE = self._st_embedding(SE, TE, self._steps_per_day)
-        STE_his = STE[:, : self._num_his]
-        STE_pred = STE[:, self._num_his :]
-        for net in self._st_att_block1:
-            X = net(X, STE_his)
-        X = self._transform_attention(X, STE_his, STE_pred)
-        for net in self._st_att_block2:
-            X = net(X, STE_pred)
-        X = torch.squeeze(self._fully_connected_2(X), 3)
-        return X
+            Return types:
+                * **X** (PyTorch Float Tensor) - Output sequence for prediction, with shape (batch_size, num_pred, num of nodes).
+            """
+            X = torch.unsqueeze(X, -1)
+            # # print('ssssss',X.shape)
+            X = self._fully_connected_1(X)
+            # # print('sss',X.shape)
+            STE = self._st_embedding(SE, TE, self._steps_per_day)
+            STE_his = STE[:, : self._num_his]
+            STE_pred = STE[:, self._num_his :]
+            print("here")
+            for net in self._st_att_block1:
+                X = net(X, STE_his)
+            X = self._transform_attention(X, STE_his, STE_pred)
+            print("hehee")
+            for net in self._st_att_block2:
+                X = net(X, STE_pred)
+            X = torch.squeeze(self._fully_connected_2(X), 3)
+            print("sjsjs")            
+            return X
