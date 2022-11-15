@@ -502,8 +502,9 @@ class GMAN(nn.Module):
         K: int,
         d: int,
         num_his: int,
-        bn_decay: float,
         num_pre: int,
+        batch_size: int,
+        bn_decay: float,
         use_bias: bool,
         mask: bool,
     ):
@@ -511,7 +512,8 @@ class GMAN(nn.Module):
         D = K * d
         self._num_his = num_his
         # self._steps_per_day = steps_per_day
-        self.num_pre = num_pre
+        self._num_pre = num_pre
+        self._batch_size = batch_size
         self._st_embedding = SpatioTemporalEmbedding(
             D, bn_decay, num_his+num_pre, use_bias
         )
@@ -553,7 +555,7 @@ class GMAN(nn.Module):
             # # print('ssssss',X.shape)
             X = self._fully_connected_1(X)
             # # print('sss',X.shape)
-            STE = self._st_embedding(SE, TE, self._steps_per_day)
+            STE = self._st_embedding(SE, TE, self._batch_size ,self._num_his, self._num_pre)
             STE_his = STE[:, : self._num_his]
             STE_pred = STE[:, self._num_his :]
             print("here")
