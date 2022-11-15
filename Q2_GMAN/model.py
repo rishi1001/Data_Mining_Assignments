@@ -137,7 +137,7 @@ class SpatioTemporalEmbedding(nn.Module):
     """
 
     def __init__(
-        self, D: int, bn_decay: float, steps_per_day: int, use_bias: bool = True
+        self, D: int, bn_decay: float, total_frame: int, use_bias: bool = True
     ):
         super(SpatioTemporalEmbedding, self).__init__()
         self._fully_connected_se = FullyConnected(
@@ -149,7 +149,7 @@ class SpatioTemporalEmbedding(nn.Module):
         )
 
         self._fully_connected_te = FullyConnected(
-            input_dims=[steps_per_day + 7, D],
+            input_dims=[total_frame, D],
             units=[D, D],
             activations=[F.relu, None],
             bn_decay=bn_decay,
@@ -157,8 +157,7 @@ class SpatioTemporalEmbedding(nn.Module):
         )
 
     def forward(
-        self, SE: torch.FloatTensor, TE: torch.FloatTensor, T: int
-    ) -> torch.FloatTensor:
+        self, SE: torch.FloatTensor, batch_size: int, num_his: int, num_pred: int) -> torch.FloatTensor:
         """
         Making a forward pass of the spatial-temporal embedding.
 
@@ -173,22 +172,16 @@ class SpatioTemporalEmbedding(nn.Module):
         SE = SE.unsqueeze(0).unsqueeze(0)
         # print(SE.shape)
         SE = self._fully_connected_se(SE)
-        # print("Affter",SE.shape)
-        dayofweek = torch.empty(TE.shape[0], TE.shape[1], 7).to(SE.device)
-        timeofday = torch.empty(TE.shape[0], TE.shape[1], T).to(SE.device)
-        for i in range(TE.shape[0]):
-            dayofweek[i] = F.one_hot(TE[..., 0][i].to(torch.int64) % 7, 7)
-        for j in range(TE.shape[0]):
-            timeofday[j] = F.one_hot(TE[..., 1][j].to(torch.int64) % T, T)
-        TE = torch.cat((dayofweek, timeofday), dim=-1)
+        # make TE of size n*(num_his+num_pred)*(num_his+num_pred)
+        # TE is one hot encoding
+        
+        TE = torch.zeros((batch_size, num_his+num_pred, 2))
+        for i in range(batch_size):
+            TE[i] = F.one_hot(torch.arange(0, num_his+num_pred), num_his+num_pred)
         TE = TE.unsqueeze(dim=2)
         # print(TE.shape)
         TE = self._fully_connected_te(TE)
         # print("TE",TE.shape)
-
-        del dayofweek, timeofday
-        s=SE+TE
-        # print(s.shape)
         return SE + TE
 
 
@@ -509,17 +502,20 @@ class GMAN(nn.Module):
         K: int,
         d: int,
         num_his: int,
+        num_pre: int,
+        batch_size: int,
         bn_decay: float,
-        steps_per_day: int,
         use_bias: bool,
         mask: bool,
     ):
         super(GMAN, self).__init__()
         D = K * d
         self._num_his = num_his
-        self._steps_per_day = steps_per_day
+        # self._steps_per_day = steps_per_day
+        self._num_pre = num_pre
+        self._batch_size = batch_size
         self._st_embedding = SpatioTemporalEmbedding(
-            D, bn_decay, steps_per_day, use_bias
+            D, bn_decay, num_his+num_pre, use_bias
         )
         self._st_att_block1 = nn.ModuleList(
             [SpatioTemporalAttention(K, d, bn_decay, mask) for _ in range(L)]
@@ -559,7 +555,7 @@ class GMAN(nn.Module):
             # # print('ssssss',X.shape)
             X = self._fully_connected_1(X)
             # # print('sss',X.shape)
-            STE = self._st_embedding(SE, TE, self._steps_per_day)
+            STE = self._st_embedding(SE, TE, self._batch_size ,self._num_his, self._num_pre)
             STE_his = STE[:, : self._num_his]
             STE_pred = STE[:, self._num_his :]
             print("here")
