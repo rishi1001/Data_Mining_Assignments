@@ -22,12 +22,11 @@ def get_train_node_ids(train_node_ids, batch_size):
     return train_ids
 
 ## device setting
-gpu=2
-device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+device = torch.device(f'cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 ### model-parameters
 hidden_layers=16
-lr=0.01
+lr=0.005
 weight_decay=5e-4
 normalize=False     # just keep it False always
 
@@ -43,7 +42,7 @@ dataset_adj = sys.argv[4]
 dataset_splits = sys.argv[5]
 graph_name = sys.argv[6]
 num_epochs=int(sys.argv[7])
-batch_size=int(sys.argv[8])
+batch_size = 8
 model_name = "A3TGCN"
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
@@ -155,10 +154,10 @@ if __name__ == '__main__':
     os.makedirs('./models', exist_ok=True)
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
-    plot=True
+    plot=False
     for epoch in range(num_epochs): 
         train(epoch,plot=plot)
-        test(plot=plot)      # on validation set    
+        # test(plot=plot)      # on validation set    
 
     print('performing test')
     test(test=True)

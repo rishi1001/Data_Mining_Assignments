@@ -9,9 +9,7 @@ from torch_geometric.loader import DataLoader
 import sys
 
 print(torch.cuda.is_available())
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-gpu=1
-device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+device = torch.device(f'cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 #device = 'cpu'
 print(device)
@@ -43,7 +41,7 @@ dataset_splits = sys.argv[3]
 graph_name=sys.argv[4]      ###  can be d1,d2,temp
 num_epochs=int(sys.argv[5])
 model_name=sys.argv[6]
-batch_size=int(sys.argv[7])
+batch_size=8
 diff = True         # TODO maybe take input
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
@@ -156,13 +154,13 @@ if __name__ == '__main__':
     os.makedirs('./models', exist_ok=True)
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
-    plot=True
+    plot=False
     for epoch in range(num_epochs): 
         train(epoch,plot)
-        test(plot=plot)      # on validation set    
+        # test(plot=plot)      # on validation set    
 
-    print('performing test')
-    test(test=True)
+    # print('performing test')
+    # test(test=True)
     print('Finished Training')
 
     print("For Training:  ")

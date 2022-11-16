@@ -9,10 +9,10 @@ class TemporalGNN(torch.nn.Module):
         super(TemporalGNN, self).__init__()
         # Attention Temporal Graph Convolutional Cell
         self.tgnn = A3TGCN(in_channels=node_features, 
-                           out_channels=32, 
+                           out_channels=16, 
                            periods=p)
         # Equals single-shot prediction
-        self.linear = torch.nn.Linear(32, f)
+        self.linear = torch.nn.Linear(16, f)
 
     def forward(self, x, edge_index,edge_weights):
         """
