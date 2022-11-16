@@ -7,11 +7,10 @@ import numpy as np
 from utils import *
 from torch_geometric.loader import DataLoader
 import sys
+from tqdm import tqdm
 
 print(torch.cuda.is_available())
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-gpu=1
-device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+device = torch.device(f'cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 #device = 'cpu'
 print(device)
@@ -43,7 +42,7 @@ dataset_splits = sys.argv[3]
 graph_name=sys.argv[4]      ###  can be d1,d2,temp
 num_epochs=int(sys.argv[5])
 model_name=sys.argv[6]
-batch_size=int(sys.argv[7])
+batch_size=8
 diff = True         # TODO maybe take input
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
@@ -83,7 +82,7 @@ def train(epoch,plot=False):
 
     running_loss = 0.0
     # batch wise training
-    for i,data in enumerate(dataloader):
+    for data in tqdm(dataloader):
         optimizer.zero_grad()  # Clear gradients.
         #print(data.features)
         out = model(data.x, data.edge_index,data.edge_weight)  
@@ -114,9 +113,6 @@ def test(test=False,plot=False):         # test=True for test set
         y0 = []
         for i,data in enumerate(dataloader):
             out = model(data.x, data.edge_index, data.edge_weight)
-            if (i%10==0 and plot):
-                out0.append(out[val_node_ids[0]].item())
-                y0.append(data.y[val_node_ids[0]].item())
 
             if test:        
                 tt= get_train_node_ids(test_node_ids,data.y.shape[0]//dataset.num_nodes)
@@ -147,7 +143,7 @@ def test(test=False,plot=False):         # test=True for test set
     if test==False and (best_loss==-1 or running_loss < best_loss):
         best_loss=running_loss
         # Saving our trained model
-        torch.save(model.state_dict(), f'{model_path}/bestval.pth')
+        torch.save(model.state_dict(), './cs1190382_task1.model')
 
 
 if __name__ == '__main__':
@@ -156,28 +152,28 @@ if __name__ == '__main__':
     os.makedirs('./models', exist_ok=True)
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
-    plot=True
+    plot=False
     for epoch in range(num_epochs): 
         train(epoch,plot)
         test(plot=plot)      # on validation set    
 
-    print('performing test')
-    test(test=True)
+    # print('performing test')
+    # test(test=True)
     print('Finished Training')
 
-    print("For Training:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=diff)
-    print("MAE: ", MAE, MAE2)
+    # print("For Training:  ")
+    # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=diff)
+    # print("MAE: ", MAE, MAE2)
 
-    model.load_state_dict(torch.load(f'{model_path}/bestval.pth'))
-    print("For Validation:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids, diff=diff)
-    print("MAE: ", MAE, MAE2)
+    # model.load_state_dict(torch.load('./cs1190382_task1.model'))
+    # print("For Validation:  ")
+    # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids, diff=diff)
+    # print("MAE: ", MAE, MAE2)
     
     
-    print("For Testing:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids, diff=diff)
-    print("MAE: ", MAE, MAE2)
+    # print("For Testing:  ")
+    # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids, diff=diff)
+    # print("MAE: ", MAE, MAE2)
 
     if (plot):
         epochs=[i for i in range(len(train_loss))]
@@ -203,4 +199,4 @@ if __name__ == '__main__':
         plt.clf()    
 
     # Saving our trained model
-    torch.save(model.state_dict(), f'{model_path}/lastmodel.pth')
+    # torch.save(model.state_dict(), f'{model_path}/lastmodel.pth')

@@ -22,12 +22,11 @@ def get_train_node_ids(train_node_ids, batch_size):
     return train_ids
 
 ## device setting
-gpu=2
-device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+device = torch.device(f'cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 ### model-parameters
 hidden_layers=16
-lr=0.01
+lr=0.005
 weight_decay=5e-4
 normalize=False     # just keep it False always
 
@@ -43,7 +42,7 @@ dataset_adj = sys.argv[4]
 dataset_splits = sys.argv[5]
 graph_name = sys.argv[6]
 num_epochs=int(sys.argv[7])
-batch_size=int(sys.argv[8])
+batch_size = 8
 model_name = "A3TGCN"
 
 model_path=f"./models/{model_name}/{num_epochs}/{graph_name}"
@@ -148,14 +147,14 @@ def test(test=False,plot=False):         # test=True for test set
     if test==False and (best_loss==-1 or running_loss < best_loss):
         best_loss=running_loss
         # Saving our trained model
-        torch.save(model.state_dict(), f'{model_path}/bestval.pth')
+        torch.save(model.state_dict(), './cs1190382_task2.model')
 
 if __name__ == '__main__':
     print('Start Training')
     os.makedirs('./models', exist_ok=True)
 
     # TODO we can use scalar to fit transform the data, also pass that in evaluate metric
-    plot=True
+    plot=False
     for epoch in range(num_epochs): 
         train(epoch,plot=plot)
         test(plot=plot)      # on validation set    
@@ -164,23 +163,23 @@ if __name__ == '__main__':
     test(test=True)
     print('Finished Training')
 
-    print("For Training:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=True)
-    print("MAE: ", MAE, MAE2)
+    # print("For Training:  ")
+    # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,train_node_ids,diff=True)
+    # print("MAE: ", MAE, MAE2)
 
-    model.load_state_dict(torch.load(f'{model_path}/bestval.pth'))
-    print("For Validation:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids,diff=True)
-    print("MAE: ", MAE, MAE2)
+    # model.load_state_dict(torch.load('./cs1190382_task2.model'))
+    # print("For Validation:  ")
+    # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,val_node_ids,diff=True)
+    # print("MAE: ", MAE, MAE2)
     
     
-    print("For Testing:  ")
-    MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids,diff=True)
-    print("MAE: ", MAE, MAE2)
+    # print("For Testing:  ")
+    # MAE, MAPE, RMSE, MAE2 = evaluate_metric(model, dataset,test_node_ids,diff=True)
+    # print("MAE: ", MAE, MAE2)
 
 
     ## ploting
-    if (True):
+    if (False):
         epochs=[i for i in range(len(train_loss))]
         # print(epochs)
         plt.plot(epochs,train_loss,label="Train_loss")
@@ -202,7 +201,3 @@ if __name__ == '__main__':
         # plt.draw()
         # plt.savefig(f"{plot_path}/MAE.png")
         # plt.clf()    
-
-
-    
-    torch.save(model.state_dict(), f'{model_path}/lastmodel.pth')

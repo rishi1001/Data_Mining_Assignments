@@ -42,7 +42,7 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
 
-    test_dataset = torch.from_numpy(np.load(dataset_X)['x']).double()
+    test_dataset = torch.from_numpy(np.load(dataset_X)['x']).double().to(device)
     edge_index, edge_weight = read_graph(dataset_adj)
 
     results = []
@@ -53,7 +53,7 @@ if __name__ == "__main__":
             x=torch.permute(x,(1,2,0))
             y_pred = model(x, edge_index, edge_weight).cpu()
             # since we are predicting y-x
-            y_pred += x[:,:,-1]
+            y_pred += x[:,:,-1].cpu()
             y_pred = y_pred.permute((1,0))
             results.append(y_pred.numpy())
     print(np.array(results).shape)

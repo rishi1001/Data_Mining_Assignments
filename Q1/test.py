@@ -4,6 +4,31 @@ import pandas as pd
 
 from model import *
 from dataset import TimeSeries
+from torch_geometric.utils import dense_to_sparse
+
+def get_dataset(graph_file,csv_file):
+    df = pd.read_csv(graph_file,index_col=0)
+    cols=df.columns
+    df.columns=[i for i in range(len(cols))]
+    df=df.reset_index(drop=True)
+    
+    t=torch.tensor(df.values)
+    edge_index , edge_weight = dense_to_sparse(t)
+    edge_weight=edge_weight
+    num_nodes = len(cols)
+    edge_index=edge_index.to(device)
+    edge_weight=edge_weight.to(device)
+    
+    if normalize:
+        edge_weight=edge_weight/torch.max(edge_weight)
+        edge_weight=edge_weight.double()
+    #mapping ={i:cols[i] for i in range(len(cols))}                    
+    mapping=cols
+    
+    df = pd.read_csv(csv_file)
+    df=df.drop(['Unnamed: 0'], axis=1)
+    dataset=torch.tensor(df.values).type(torch.DoubleTensor)
+    return dataset.to(device),edge_index.to(device),edge_weight.to(device)
 
 ### model-parameters
 hidden_layers=32
@@ -31,8 +56,7 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(model_path))
     model.eval()
 
-    dataset=TimeSeries(dataset_X,dataset_adj,normalize)
-
+    dataset,edge_index,edge_weight = get_dataset(dataset_adj,dataset_X)
     results = pd.read_csv(dataset_X)
     timestamps = pd.to_datetime(results[results.columns[0]])
     results = results.drop(results.columns[0], axis=1)
@@ -41,12 +65,12 @@ if __name__ == "__main__":
     results.index.name = None
 
     with torch.no_grad():
-        for i in range(len(dataset)+1): # dataset returns one less probably
-            print(i)
-            data = dataset[i]
-            y_pred = model(data.x, dataset.edge_index, dataset.edge_weight).cpu()
+        for i in range(len(dataset)): # dataset returns one less probably
+            x=dataset[i]
+            x=torch.reshape(x,(x.shape[0],1))
+            y_pred = model(x, edge_index, edge_weight).cpu()
             # since we are predicting y-x
-            y_pred += data.x
+            y_pred += x.cpu()
             y_pred = y_pred.ravel().tolist()
             # print(y_pred.shape)
             results.iloc[i] = y_pred

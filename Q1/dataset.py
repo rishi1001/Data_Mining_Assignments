@@ -9,9 +9,9 @@ from torch_geometric.utils import dense_to_sparse
 from torch_geometric.data import Data
 from torch_geometric.data import Dataset
        
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-gpu=1
-device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# gpu=1
+# device = torch.device(f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
 class TimeSeries(Dataset):
     def __init__(self,csv_file,graph_file,normalize) -> None:
         super().__init__()
