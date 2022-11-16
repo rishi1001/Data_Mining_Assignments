@@ -155,7 +155,7 @@ if __name__ == '__main__':
     plot=False
     for epoch in range(num_epochs): 
         train(epoch,plot)
-        test(plot=plot)      # on validation set    
+        # test(plot=plot)      # on validation set    
 
     # print('performing test')
     # test(test=True)

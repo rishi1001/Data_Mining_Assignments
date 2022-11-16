@@ -176,9 +176,8 @@ class SpatioTemporalEmbedding(nn.Module):
         # TE is one hot encoding
 
         TE = torch.zeros((batch_size, num_his+num_pred, num_his+num_pred))
-        print(TE.shape)
+        # print(TE.shape)
         for i in range(batch_size):
-            print(F.one_hot(torch.arange(0, num_his+num_pred), num_his+num_pred))
             TE[i] = F.one_hot(torch.arange(0, num_his+num_pred), num_his+num_pred)
         TE = TE.unsqueeze(dim=2)
         # print(TE.shape)
